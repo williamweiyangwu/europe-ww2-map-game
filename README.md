@@ -12,6 +12,21 @@ Open `index.html` in any modern browser — there is nothing to install or build
 4. **Battle** → tick the units you want to attack with, then pick a target border.
 5. Mines are your only income, so buy mine cars early.
 
+### Play online
+
+1. On the start screen press **Play online multiplayer**.
+2. One player presses **Host a room** and starts the war once others join.
+3. Everyone else types the 4-letter room code into **Join** (or picks it from the
+   open-rooms list).
+4. Every nation is a seat — pick yours. Unpicked nations fight for the AI.
+   Players who stop responding are released back to the AI after ~12 seconds.
+5. The host runs the simulation on their machine; guests send orders (recruit,
+   move) which the host applies. Guests should keep the host's tab open.
+
+Uses the free public MQTT relay `broker.emqx.io:8084` (secure WebSocket). Rooms
+are ephemeral — there is no account, no stored game, and nothing leaves your
+browser except the topics above.
+
 ### Controls
 
 | Key | Action |
@@ -32,6 +47,9 @@ Open `index.html` in any modern browser — there is nothing to install or build
 
 ## Technical notes
 
-- One HTML file, ~92 KB, no network requests, no build step, no external assets.
+- One HTML file, ~116 KB, no build step, no external assets (the game itself).
 - Map is inline SVG; all rules live in one inline `<script>`.
 - Works from `file://` as well as over HTTP.
+- Multiplayer is host-authoritative: the host's `tick()` drives the war and
+  broadcasts a compact JSON state; guests render it and send `move`/`recruit`
+  orders over MQTT (WSS, topic namespace `ow/<ROOM>/…`).
