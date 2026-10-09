@@ -283,7 +283,25 @@
   #pageT.shopT{color:var(--gold)}
   #pageT.battleT{color:var(--red)}
   #pageT.newsT{color:#e9d19a}
-  #pageT.battleT{color:#f0a5a5}
+  #pageT.mailT{color:#b8a88a}
+
+  /* mail */
+  .mList{display:flex;flex-direction:column;gap:8px;max-height:54vh;overflow-y:auto}
+  .mMail{background:#141926;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .mMail.mine{border-color:#3a4a2a}
+  .mHead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .mHead b{font-size:13px;color:#e6dbb8}
+  .mHead .mDay{margin-left:auto;font-size:11px;color:#8d99b0;font-weight:600}
+  .mSubj{font-size:14px;font-weight:800;color:#e9d19a;margin:4px 0 6px}
+  .mBody{color:#cfd6e6;font-size:12.5px;line-height:1.45;white-space:pre-wrap}
+  .mAns{color:#7fe0c1;font-size:12px;font-weight:600;margin-top:6px}
+  .mReplies{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .rbtn{padding:5px 11px;border-radius:6px;background:#1a2131;border:1px solid var(--line);color:#dfe6f0;font-size:12px;cursor:pointer}
+  .rbtn:hover{border-color:var(--gold);background:#232c3f}
+  .mSelect{background:#1a2131;border:1px solid var(--line);color:#dfe6f0;padding:6px 8px;border-radius:6px;flex:1}
+  .mHint{color:#8d99b0;font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:none}
+  #mSubj{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  #mSubj .chip.on{border-color:var(--gold);background:#3b2f10;color:#f0d58a}
 
   #end{
     position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;
@@ -350,8 +368,9 @@
   <button class="btn" data-sp="1">1&times;</button>
   <button class="btn" data-sp="2">2&times;</button>
   <button class="btn" data-sp="3">3&times;</button>
-  <button class="btn" id="bFocus">My front</button>
+<button class="btn" id="bFocus">My front</button>
   <button class="btn" id="bNews">&#128240; News<span class="badge" id="nbNews"></span></button>
+  <button class="btn" id="bMail">&#9993; Mail<span class="badge" id="nbMail"></span></button>
   <button class="btn" id="bNet">&#127760; Multi</button>
   <button class="btn danger" id="bNew">New war</button>
 </div>
@@ -457,6 +476,23 @@
         </div>
         <div id="newsList" class="newsList"><div class="sub" style="padding:12px">No dispatches yet &mdash; the typographers are waiting for news from the front.</div></div>
         <div class="mastSub" style="text-align:center;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.07)">&mdash; END OF ISSUE &mdash;</div>
+      </div>
+    </div>
+
+    <div id="pgMail" style="display:none">
+      <div class="card">
+        <h3>&#128231; Diplomatic pouch <span class="mHint">The post pauses the war while it is open.</span></h3>
+        <div id="mList" class="mList"><div class="sub" style="padding:12px">The pigeon loft is quiet. You may have to wait a while for a reply.</div></div>
+      </div>
+      <div class="card">
+        <h3>Send a note <small>five subjects &middot; composing pauses the war</small></h3>
+        <div class="row" style="margin-top:4px"><span>To</span>
+          <select id="mTo" class="mSelect">
+            <option value="">Choose a nation&hellip;</option>
+          </select>
+        </div>
+        <div class="chips" id="mSubj"></div>
+        <button class="btn on" id="mSend" disabled>&#128231; Post it</button>
       </div>
     </div>
   </div>
@@ -1106,10 +1142,12 @@ function warMap(){
 function invalidateWars(){ WAR_MAP=null; }
 function atWar(a,b){
   if(a===b || a==='iceland' || b==='iceland') return false;
+  if(S.pact && S.pact.has(warKey(a,b))) return false;
   return S.wars.has(warKey(a,b)) || warMap()[warKey(a,b)]===true;
 }
 function declareWar(a,b){
   if(a==='iceland' || b==='iceland') return;
+  if(S.pact) S.pact.delete(warKey(a,b));
   S.wars.add(warKey(a,b));
   /* an attacked nation takes on its whole neighbourhood */
   (NBY[a]?NBY[a].nb:[]).forEach(function(n){ if(n!==b && n!=='iceland') S.wars.add(warKey(a,n)); });
@@ -1118,13 +1156,15 @@ function declareWar(a,b){
 
 function newGame(player){
   S={ player:player, day:0, uid:0, sel:player, pick:new Set(), log:[], over:null, wars:new Set(),
-      prov:{}, units:[], targets:[], aggro:{}, aiT:{}, orderMode:true, gold:{}, news:[], elimSet:new Set(), brokeSet:new Set() };
+      prov:{}, units:[], targets:[], aggro:{}, aiT:{}, orderMode:true, gold:{}, news:[], elimSet:new Set(),
+      brokeSet:new Set(), mail:[], pact:new Set(), mood:{}, mailSeq:0, nextDispatchDay:0, nextMailDay:2 };
   ALL.forEach(function(n){
     var home=(n.id!=='iceland' && !n.owner);
     S.prov[n.id]={ id:n.id, owner:(n.owner||n.id), units:[], mines:home?2:0, mineBy:home?n.id:null, mineT:5 };
     S.gold[n.id]=(n.id==='iceland')?0:START_MONEY;
     S.aiT[n.id]=(n.id==='iceland')?99:(4+(Math.random()*4|0));
     S.aggro[n.id]=0.9+Math.random()*0.45;
+    S.mood[n.id]=0;
   });
   /* every land neighbour starts at war - the whole map is one long front */
   ALL.forEach(function(n){
@@ -1292,6 +1332,7 @@ function tick(){
       pp.owner=nu;
       pp.mines=0; pp.mineBy=null;
       capEv.push({taker:nu, prov:id3, old:old, d:S.day});
+      mailWarEvent(nu, old);
       invalidateWars();
       if(nu===S.player || old===S.player) declareWar(S.player, (nu===S.player?old:nu));
       if(nu===S.player || old===S.player) log(captureMsg(nu,pp.id,old,'captured'));
@@ -1320,6 +1361,7 @@ function tick(){
   });
 
   aiTurn();
+  aiMail();
   checkEnd();
   render();
 }
@@ -1500,17 +1542,21 @@ function flash(msg){
 /* ---------- pages: Shop / Battle ---------- */
 var PAGE=null;
 function showPage(p){
-  PAGE=(p==='shop'||p==='battle'||p==='news')?p:null;
+  var was=PAGE;
+  PAGE=(p==='shop'||p==='battle'||p==='news'||p==='mail')?p:null;
+  if(was==='mail' && PAGE!=='mail') mailResume();
   var pv=document.getElementById('page');
   pv.style.display=PAGE?'flex':'none';
   document.getElementById('pgShop').style.display=(PAGE==='shop')?'block':'none';
   document.getElementById('pgBattle').style.display=(PAGE==='battle')?'block':'none';
   document.getElementById('pgNews').style.display=(PAGE==='news')?'block':'none';
+  document.getElementById('pgMail').style.display=(PAGE==='mail')?'block':'none';
   var t=document.getElementById('pageT');
   t.className=PAGE?PAGE+'T':'';
   t.textContent=PAGE==='shop' ? '\u{1F6CD}  Shop' :
-    (PAGE==='battle' ? '\u2694  Battle' : (PAGE==='news' ? '\u{1F4F0}  Newspaper' : ''));
-  if(PAGE==='news') NEWS_SEEN=S.news.length;
+    (PAGE==='battle' ? '\u2694  Battle' : (PAGE==='news' ? '\u{1F4F0}  Newspaper' : (PAGE==='mail' ? '\u2709  Diplomatic Pouch' : '')));
+  if(PAGE==='news') NEWS_SEEN_DAY=(S.news&&S.news.length)? S.news[0].d : S.day;
+  if(PAGE==='mail'){ mailPauseOpen(); markMailRead(); }
   render();
 }
 function closePage(){ showPage(null); }
@@ -1758,6 +1804,8 @@ function render(){
   renderPanel();
   paintNews();
   updateNewsBadge();
+  paintMail();
+  updateMailBadge();
 }
 function warAround(id){
   var o=S.prov[id].owner;
@@ -1987,6 +2035,7 @@ function wireTop(){
     if(e.key==='s'||e.key==='S'){ e.preventDefault(); showPage('shop'); return; }
     if(e.key==='b'||e.key==='B'){ e.preventDefault(); showPage('battle'); return; }
     if(e.key==='n'||e.key==='N'){ e.preventDefault(); document.getElementById('bNews').click(); return; }
+    if(e.key==='m'||e.key==='M'){ e.preventDefault(); if(document.getElementById('bMail')) document.getElementById('bMail').click(); return; }
     if(e.key==='Escape'){ closePage(); return; }
   });
 }
@@ -2358,7 +2407,8 @@ function netStateOut(){
   });
   return {v:1, day:S.day, uid:S.uid, wars:wars, prov:prov, units:units,
           gold:S.gold, log:S.log.slice(-20), over:!!S.over,
-          news:S.news.slice(-30), elim:Array.prototype.slice.call(S.elimSet||[])};
+          news:S.news.slice(-30), elim:Array.prototype.slice.call(S.elimSet||[]),
+          mail:(S.mail||[]).slice(-60), pact:Array.prototype.slice.call(S.pact||[]), mood:S.mood||{}, mailSeq:S.mailSeq||0, nextDispatchDay:S.nextDispatchDay||0, nextMailDay:S.nextMailDay||S.day+1};
 }
 function applyNetState(o){
   if(!o || o.v!==1) return;
@@ -2377,6 +2427,12 @@ function applyNetState(o){
   S.log=o.log||S.log;
   S.news=o.news||[];
   S.elimSet=new Set(o.elim||[]);
+  S.mail=o.mail||[];
+  S.pact=new Set(o.pact||[]);
+  S.mood=o.mood||{};
+  S.mailSeq=o.mailSeq||0;
+  S.nextDispatchDay=o.nextDispatchDay||0;
+  S.nextMailDay=o.nextMailDay||0;
   NET.lastState=Date.now();
   if(NET.hostOfflineWarned){ NET.hostOfflineWarned=false; }
   render();
@@ -2420,6 +2476,9 @@ function netApplyCmd(nat,msg){
     spawn(msg.t,msg.loc,nat);
     if(SHOWCASE[msg.t]) newsUnveil(nat,msg.t,msg.loc);
     NET.dirty=true;
+  } else if(msg.k==='mail'){
+    if(msg.c===1 && msg.to && msg.sub){ sendMailFor(nat, msg.to, msg.sub); NET.dirty=true; }
+    else if(msg.id!=null && msg.ri!=null){ applyReplyFor(nat, msg.id, +msg.ri); NET.dirty=true; }
   }
 }
 setInterval(function(){
@@ -2468,9 +2527,10 @@ document.getElementById('netName').onkeydown=function(e){ if(e.key==='Enter'){ t
    The host is the only one who writes dispatches; guests read S.news via
    the broadcast state, so the whole room shares the same front page.
    ======================================================================= */
-var NEWS_SEEN=0;
+var NEWS_SEEN_DAY=-1;
 var SHOWCASE={heavy:1, rocket:1, hnky:1};
 var N_MONTH=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var NEWS_INTERVAL=10;
 function dayFull(d){
   var dt=new Date(1939,8,1+d);
   return N_MONTH[dt.getMonth()]+' the '+dt.getDate();
@@ -2488,8 +2548,10 @@ function newsCanvas(){ return !(NET && NET.mode===2); }
 function pick(a){ return a[(Math.random()*a.length)|0]; }
 function news(h,b,cap){
   if(!newsCanvas()) return;
+  if(S.day < (S.nextDispatchDay||0)) return;
+  S.nextDispatchDay=S.day+NEWS_INTERVAL;
+  S.news.length=0;
   S.news.push({d:S.day, h:h, b:b, cap:!!cap});
-  if(S.news.length>40) S.news.shift();
 }
 function unitFancy(nid,type){
   var a=arsenal(nid,'army')||[], b=arsenal(nid,'air')||[], e=null,i;
@@ -2606,15 +2668,338 @@ function paintNews(){
 function updateNewsBadge(){
   var nb=document.getElementById('nbNews');
   if(!nb) return;
-  var un=Math.max(0,(S.news?S.news.length:0)-(NEWS_SEEN||0));
+  var latest=(S.news&&S.news.length)? S.news[0].d : -1;
+  var un=(latest>NEWS_SEEN_DAY)?1:0;
   nb.style.display=un?'inline-flex':'none';
   nb.textContent=un;
 }
 document.getElementById('bNews').onclick=function(){
-  NEWS_SEEN=S.news.length;
+  NEWS_SEEN_DAY=(S.news&&S.news.length)? S.news[0].d : S.day;
   updateNewsBadge();
   showPage('news');
 };
+
+/* =======================================================================
+   14. DIPLOMATIC MAIL
+   Nations write to one another. Letters arrive from the AI, each offering
+   between two and four replies; you may also post notes of your own under
+   five subjects. The pouch pauses the war while it is open. Host-authoritative:
+   mail, mood and pacts live in S and travel with the broadcast state; guests
+   post their replies and notes back to the host as commands.
+   ======================================================================= */
+var MAIL_SUBJ=null, MAIL_OPEN=false, MAIL_PREV=0;
+
+function mailPauseOpen(){
+  if(MAIL_OPEN) return;
+  MAIL_OPEN=true; MAIL_PREV=spd;
+  setSpeed(0);
+}
+function mailResume(){
+  if(!MAIL_OPEN) return;
+  MAIL_OPEN=false;
+  if(MAIL_PREV>0) setSpeed(MAIL_PREV);
+}
+function markMailRead(){
+  var me=S.player;
+  (S.mail||[]).forEach(function(m){ if(m.to===me) m.read=true; });
+}
+function humanNations(){
+  if(NET && NET.mode===1){ var a=Object.keys(NET.seats||{}); if(a.length) return a; }
+  return [S.player];
+}
+function moodTone(nid){
+  var m=S.mood[nid]||0;
+  if(m>=3) return 'friendly';
+  if(m<=-3) return 'hostile';
+  return 'neutral';
+}
+
+var COMPOSE_SUBJECTS=[
+  {id:'alliance', label:'Offer an alliance', dMood:2, pact:true,
+   body:'I write to propose a pact of friendship between our two peoples. The map is full of knives, and two quiet borders are worth ten garrisons.'},
+  {id:'trade', label:'Propose a trade agreement', dMood:1,
+   body:'Gold, timber, steel - no nation has everything. I propose our merchants move freely and both treasuries breathe a little easier.'},
+  {id:'praise', label:'Send congratulations', dMood:2,
+   body:'Your soldiers are the talk of every chancellery in Europe. I write to salute a nation that has earned its place on the map.'},
+  {id:'warning', label:'Issue a warning', dMood:-1,
+   body:'Consider this a courtesy. Keep your armies away from my frontier, and there will be no unpleasantness between us.'},
+  {id:'ultimatum', label:'Issue an ultimatum', dMood:-3, war:true,
+   body:'Comply, or be crushed. My patience ends at the border, and you have until the next sunrise to decide.'}
+];
+
+var MAIL_KINDS={
+  alliance:{
+    sub:['A pact of friendship','An offer of alliance','Hands across the border'],
+    body:function(fn,tn){ return pick([
+      'The court of '+fn+' writes to '+tn+' with a simple offer: let our borders be quiet. Sign, and neither army need guard the other again.',
+      fn+' proposes a pact. "The map is full of knives," the letter reads. "Two friendly borders are worth ten garrisons."',
+      'A sealed letter from '+fn+' proposes an alliance against the storms to come.'
+    ]); },
+    replies:function(){ return [
+      {t:'Accept the alliance', m:3, p:1},
+      {t:'Accept, but coldly', m:1, p:1},
+      {t:'Decline politely', m:-1},
+      {t:'Refuse with contempt', m:-3}
+    ]; }
+  },
+  warning:{
+    sub:['A word of warning','A matter of borders','Eyes on the frontier'],
+    body:function(fn,tn){ return pick([
+      fn+' has noticed the build-up. "Move your soldiers from our frontier," the letter warns, "or we shall take it as a declaration."',
+      'A courier from '+fn+' arrives with a single sentence: "Our guns are loaded, '+tn+'. Do not make us point them."',
+      fn+' warns that foreign officers have been seen too close to its borders - and names no names.'
+    ]); },
+    replies:function(){ return [
+      {t:'Reassure them', m:1},
+      {t:'Thank them coldly', m:0},
+      {t:'Dismiss the warning', m:-2}
+    ]; }
+  },
+  threat:{
+    sub:['An ultimatum','A threat from the chancellery','Your doom approaches'],
+    body:function(fn,tn){ return pick([
+      'The letter from '+fn+' is short and ugly: "Surrender your pretensions, or we will bury them."',
+      fn+' declares that '+tn+' has made an enemy it cannot afford. "The next courier brings artillery."',
+      'A black-bordered note from '+fn+' lists the towns it will burn first.'
+    ]); },
+    replies:function(){ return [
+      {t:'Defy them', m:-2},
+      {t:'Answer with force', m:-4, w:1},
+      {t:'Offer to talk', m:1},
+      {t:'Ignore them', m:-1}
+    ]; }
+  },
+  peace:{
+    sub:['Terms of peace','An end to the fighting','A way out of the war'],
+    body:function(fn,tn){ return pick([
+      'Weary of the fighting, '+fn+' offers terms: "Let the guns rest. Our people have bled enough."',
+      fn+' sends a white flag by courier and one request - an armistice, before another winter at war.',
+      'The generals of '+fn+' are ready to talk. The letter asks '+tn+' to name its price for peace.'
+    ]); },
+    replies:function(){ return [
+      {t:'Accept the peace', m:3, p:1, peace:1},
+      {t:'Demand more', m:-1},
+      {t:'Refuse - press on', m:-2, w:1}
+    ]; }
+  },
+  praise:{
+    sub:['Congratulations','A toast from the capital','In admiration'],
+    body:function(fn,tn){ return pick([
+      'The salons of '+fn+' raise a glass to '+tn+'. "The whole continent watches your soldiers with admiration."',
+      fn+' writes to offer congratulations on the campaign - and, perhaps, to be remembered as a friend.',
+      'A letter of praise arrives from '+fn+', full of flattery and careful good wishes.'
+    ]); },
+    replies:function(){ return [
+      {t:'Return the compliment', m:2},
+      {t:'Accept graciously', m:1},
+      {t:'Stay silent', m:0}
+    ]; }
+  },
+  intel:{
+    sub:['A whisper from the border','Rumours from the east','What the courier heard'],
+    body:function(fn,tn){ return pick([
+      fn+' passes along a rumour: another court is arming, and its eyes are not on its own borders.',
+      'A wine-stained note from '+fn+' claims to know where the next war will begin - and it is not between you.',
+      'The intelligence service of '+fn+' shares what it has heard: troop trains, night movements, sealed orders.'
+    ]); },
+    replies:function(){ return [
+      {t:'Thank them', m:1},
+      {t:'Ignore it', m:0}
+    ]; }
+  },
+  trade:{
+    sub:['A proposal of trade','Gold for steel','Merchants at the frontier'],
+    body:function(fn,tn){ return pick([
+      fn+' proposes a trade agreement: "Gold, timber, steel - no nation has everything. Let our merchants move freely."',
+      'A merchant house writes on behalf of '+fn+', offering favourable rates on goods both armies will need.',
+      'The treasury of '+fn+' wishes to open its markets to '+tn+'.'
+    ]); },
+    replies:function(){ return [
+      {t:'Agree to trade', m:2},
+      {t:'Consider it', m:1},
+      {t:'Refuse', m:-1}
+    ]; }
+  }
+};
+
+function addMail(from,to,sub,body,replies){
+  var m={id:++S.mailSeq, from:from, to:to, sub:sub, body:body, replies:replies||[], day:S.day, read:false, answered:null};
+  S.mail.push(m);
+  if(S.mail.length>60) S.mail.shift();
+  return m;
+}
+function buildMail(from,to,kind){
+  var K=MAIL_KINDS[kind]; if(!K) return;
+  addMail(from,to,pick(K.sub),K.body(Nname(from),Nname(to)),K.replies());
+}
+function simpleReplies(friendly){
+  if(friendly) return [
+    {t:'Continue the friendship', m:2, p:1},
+    {t:'Accept their warmth', m:1}
+  ];
+  return [
+    {t:'Offer peace', m:1, p:1},
+    {t:'Leave it', m:-1},
+    {t:'Threaten back', m:-2}
+  ];
+}
+function respondMail(from,to){
+  var tone=moodTone(from), sub, body;
+  if(tone==='friendly'){
+    sub=pick(['A warm reply','In friendship','Glad tidings']);
+    body=Nname(from)+' is pleased. "Then it is settled between our peoples. May the frontier stay quiet."';
+  } else if(tone==='hostile'){
+    sub=pick(['A cold reply','Your enemy answers','No quarter']);
+    body=Nname(from)+' is not appeased. "Remember these words when the guns turn your way."';
+  } else {
+    sub=pick(['A measured reply','The chancellery replies','Your note, received']);
+    body=Nname(from)+' gives nothing away. "Your note has been received and weighed. Time will tell."';
+  }
+  addMail(from,to,sub,body,simpleReplies(tone==='friendly'));
+}
+
+function sendMailFor(actor,to,subId){
+  var cs=null,i;
+  for(i=0;i<COMPOSE_SUBJECTS.length;i++) if(COMPOSE_SUBJECTS[i].id===subId) cs=COMPOSE_SUBJECTS[i];
+  if(!cs || !NBY[to] || to===actor) return;
+  S.mood[to]=(S.mood[to]||0)+(cs.dMood||0);
+  if(cs.pact) S.pact.add(warKey(actor,to));
+  if(cs.war) declareWar(actor,to);
+  addMail(actor,to,cs.label,cs.body,[]);
+  respondMail(to,actor);
+}
+function applyReplyFor(actor,id,ri){
+  var m=null,i;
+  for(i=0;i<S.mail.length;i++) if(S.mail[i].id===id) m=S.mail[i];
+  if(!m || m.to!==actor || !m.replies || !m.replies[ri]) return;
+  var r=m.replies[ri];
+  m.answered=r.t; m.read=true;
+  var from=m.from;
+  S.mood[from]=(S.mood[from]||0)+(r.m||0);
+  if(r.p) S.pact.add(warKey(from,actor));
+  if(r.peace){ S.pact.add(warKey(from,actor)); S.wars.delete(warKey(from,actor)); }
+  if(r.w) declareWar(from,actor);
+  respondMail(from,actor);
+}
+function aiMail(){
+  if(!newsCanvas()) return;
+  if(S.day < (S.nextMailDay||0)) return;
+  S.nextMailDay=S.day + 6 + (Math.random()*7|0);
+  var humans=humanNations();
+  if(!humans.length) return;
+  var to=pick(humans);
+  var cand=NATIONS.filter(function(n){
+    return n.id!==to && n.id!=='iceland' && (landOf(n.id)>0 || unitsOf(n.id).length>0);
+  });
+  if(!cand.length) return;
+  var from=pick(cand).id;
+  var m=S.mood[from]||0, war=atWar(from,to), pool;
+  if(war && m<0) pool=['threat','peace','threat'];
+  else if(war) pool=['peace','threat','intel'];
+  else if(m>=2) pool=['alliance','praise','alliance'];
+  else if(m<=-2) pool=['warning','threat'];
+  else pool=['alliance','warning','intel','praise','trade'];
+  buildMail(from,to,pick(pool));
+}
+function mailWarEvent(nu,old){
+  if(!newsCanvas()) return;
+  var humans=humanNations();
+  if(humans.indexOf(nu)>=0 && NBY[old] && (landOf(old)>0 || unitsOf(old).length>0)){
+    if(Math.random()<0.5) buildMail(old,nu,pick(['threat','peace']));
+  } else if(humans.indexOf(old)>=0 && NBY[nu]){
+    if(Math.random()<0.5) buildMail(nu,old,pick(['threat','praise']));
+  }
+}
+
+/* ---------- mail UI ---------- */
+function paintMail(){
+  if(PAGE!=='mail') return;
+  var el=document.getElementById('mList');
+  if(!el) return;
+  var me=S.player, ms=(S.mail||[]).filter(function(m){ return m.to===me || m.from===me; }).slice().reverse();
+  var h='';
+  if(!ms.length){
+    h='<div class="sub" style="padding:12px">The pigeon loft is quiet. You may have to wait a while for a reply.</div>';
+  } else {
+    ms.forEach(function(m){
+      var mine=(m.from===me);
+      var who=mine
+        ? 'You <span style="color:#8d99b0">&rsaquo; '+Nname(m.to)+'</span>'
+        : (NBY[m.from]? NBY[m.from].flag+' '+Nname(m.from) : Nname(m.from));
+      h+='<div class="mMail'+(mine?' mine':'')+'">';
+      h+='<div class="mHead"><b>'+who+'</b><span class="mDay">'+dayMeta(m.day)+'</span></div>';
+      h+='<div class="mSubj">'+m.sub+'</div>';
+      h+='<div class="mBody">'+m.body+'</div>';
+      if(m.answered){ h+='<div class="mAns">You replied: '+m.answered+'</div>'; }
+      else if(!mine && m.replies && m.replies.length){
+        h+='<div class="mReplies">';
+        m.replies.forEach(function(r,ri){
+          h+='<button class="rbtn" data-id="'+m.id+'" data-ri="'+ri+'">'+r.t+'</button>';
+        });
+        h+='</div>';
+      }
+      h+='</div>';
+    });
+  }
+  el.innerHTML=h;
+  Array.prototype.forEach.call(el.querySelectorAll('.rbtn'),function(b){
+    b.onclick=function(){ doReply(+b.getAttribute('data-id'), +b.getAttribute('data-ri')); };
+  });
+  paintCompose();
+}
+function paintCompose(){
+  var sel=document.getElementById('mTo');
+  if(!sel) return;
+  var me=S.player, cur=sel.value, h='<option value="">Choose a nation&hellip;</option>';
+  NATIONS.forEach(function(n){
+    if(n.id===me || n.id==='iceland') return;
+    if(landOf(n.id)===0 && unitsOf(n.id).length===0) return;
+    h+='<option value="'+n.id+'">'+n.flag+' '+n.name+'</option>';
+  });
+  sel.innerHTML=h; sel.value=cur;
+  var chips=document.getElementById('mSubj');
+  if(chips){
+    chips.innerHTML='';
+    COMPOSE_SUBJECTS.forEach(function(c){
+      var b=document.createElement('button');
+      b.className='chip'+(MAIL_SUBJ===c.id?' on':'');
+      b.textContent=c.label;
+      b.onclick=function(){ MAIL_SUBJ=c.id; paintCompose(); };
+      chips.appendChild(b);
+    });
+  }
+  var send=document.getElementById('mSend');
+  if(send) send.disabled=!(sel.value && MAIL_SUBJ);
+}
+function doReply(id,ri){
+  if(NET && NET.mode===2){ netPubRoom('cmd',JSON.stringify({p:NET.pid,k:'mail',id:id,ri:ri})); return; }
+  applyReplyFor(S.player,id,ri);
+  if(NET && NET.mode===1) NET.dirty=true;
+  render();
+}
+function doSend(){
+  var to=document.getElementById('mTo').value;
+  if(!to || !MAIL_SUBJ) return;
+  if(NET && NET.mode===2){ netPubRoom('cmd',JSON.stringify({p:NET.pid,k:'mail',c:1,to:to,sub:MAIL_SUBJ})); }
+  else sendMailFor(S.player,to,MAIL_SUBJ);
+  if(NET && NET.mode===1) NET.dirty=true;
+  render();
+}
+function updateMailBadge(){
+  var nb=document.getElementById('nbMail');
+  if(!nb) return;
+  var me=S.player, un=0;
+  (S.mail||[]).forEach(function(m){ if(m.to===me && !m.read) un++; });
+  nb.style.display=un?'inline-flex':'none';
+  nb.textContent=un;
+}
+document.getElementById('bMail').onclick=function(){ showPage('mail'); };
+(function(){
+  var sel=document.getElementById('mTo');
+  if(sel) sel.onchange=function(){ paintCompose(); };
+  var send=document.getElementById('mSend');
+  if(send) send.onclick=doSend;
+})();
 </script>
 </body>
 </html>

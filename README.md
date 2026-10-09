@@ -34,6 +34,7 @@ browser except the topics above.
 | `S` | Open the Shop |
 | `B` | Open the Battle page |
 | `N` | Read the daily paper |
+| `M` | Open the diplomatic pouch |
 | `Esc` | Return to the map |
 | `Space` | Pause / resume |
 
@@ -41,8 +42,14 @@ While the war runs, hit **News** (or `N`) to read **The Continental** — a news
 written from what actually happened on the map: who occupied what, with which
 machines (a German *Panzer VIII Maus* leading the way into Poland), and who was
 wiped off the map. Captures, collapsed treasuries, vanished nations, and the
-unveiling of legendary weapons all reach the front page. Guests receive the same
-edition as the host.
+unveiling of legendary weapons all reach the front page. A fresh edition arrives
+every ten days, replacing the last.
+
+Hit **Mail** (or `M`) to open the **diplomatic pouch**. Other nations write to you,
+and every letter offers between two and four replies — accept a pact, make peace,
+or answer a threat with force. You can also post your own notes under five
+subjects: offer an alliance, a trade deal, congratulations, a warning, or an
+ultimatum. Reading and composing pauses the war until you close the desk.
 
 ## Rules worth knowing
 
@@ -55,9 +62,9 @@ edition as the host.
 
 ## Technical notes
 
-- One HTML file, ~116 KB, no build step, no external assets (the game itself).
+- One HTML file, ~128 KB, no build step, no external assets (the game itself).
 - Map is inline SVG; all rules live in one inline `<script>`.
 - Works from `file://` as well as over HTTP.
 - Multiplayer is host-authoritative: the host's `tick()` drives the war and
-  broadcasts a compact JSON state; guests render it and send `move`/`recruit`
-  orders over MQTT (WSS, topic namespace `ow/<ROOM>/…`).
+  broadcasts a compact JSON state; guests render it and send `move`/`recruit`/
+  `mail` orders over MQTT (WSS, topic namespace `ow/<ROOM>/…`).
