@@ -127,31 +127,12 @@
   .chip.friend:hover{border-color:var(--green);background:#1c2a1f}
   .chip i{font-style:normal;color:#a7b3c8;font-size:11px;font-weight:600}
 
-  /* ---- the daily paper ---- */
-  .paper{
-    max-width:860px;margin:0 auto;background:linear-gradient(#241c10,#190f06 120%);
-    border:1px solid #5a4a2a;border-radius:4px;padding:26px 34px 18px;
-    box-shadow:0 20px 60px #0009;
-  }
-  .masthead{text-align:center;padding-bottom:14px;margin-bottom:16px;border-bottom:3px double #7a6840}
-  .masthead h2{
-    font:900 40px/1 Georgia,"Times New Roman",serif;letter-spacing:6px;color:#e9d19a;margin:0 0 4px;
-  }
-  .masthead .mastSub{color:#a08c5f;font-size:11.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
-  .newsList{display:flex;flex-direction:column}
-  .article{border-bottom:1px solid #44381f;padding:14px 4px}
-  .article:last-child{border-bottom:none}
-  .aTag{
-    display:inline-block;font:700 10px/1.2 georgia,serif;letter-spacing:2px;text-transform:uppercase;
-    color:#0b0e14;background:#c9a15a;border-radius:2px;padding:3px 7px;margin-bottom:8px;
-  }
-  .aH{
-    font:800 23px/1.22 Georgia,"Times New Roman",serif;color:#f0e2be;margin:0 0 7px;letter-spacing:.2px;
-  }
-  .aH.capital{color:#ffdbb2}
-  .aMeta{font:700 11px/1.3 "Segoe UI",sans-serif;color:#8d7f57;letter-spacing:.6px;margin-bottom:8px}
-  .aBody{font:600 13.5px/1.55 Georgia,"Times New Roman",serif;color:#d9c9a4}
-  .aBody b{color:#f0e2be}
+  /* ---- the daily paper (right sidebar) ---- */
+  #newsPanel{max-height:230px;overflow-y:auto}
+  .sNewsH{font:800 15px/1.25 Georgia,"Times New Roman",serif;color:#e9d19a;margin:2px 0 4px}
+  .sNewsM{font-size:11px;font-weight:600;color:#8d7f57;margin-bottom:6px}
+  .sNewsB{font:600 12.5px/1.5 Georgia,"Times New Roman",serif;color:#d9c9a4}
+  .sNewsB b{color:#f0e2be}
 
   /* ---- neighbouring garrisons ---- */
   #bGar{margin-top:7px;border-top:1px solid var(--line);padding-top:6px;
@@ -282,26 +263,36 @@
   .pageWrap>.card{max-width:640px;margin:0 auto 14px}
   #pageT.shopT{color:var(--gold)}
   #pageT.battleT{color:var(--red)}
-  #pageT.newsT{color:#e9d19a}
-  #pageT.mailT{color:#b8a88a}
 
-  /* mail */
-  .mList{display:flex;flex-direction:column;gap:8px;max-height:54vh;overflow-y:auto}
+  /* mail (right sidebar) */
+  #mList{max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+  .mRow{display:flex;align-items:center;gap:6px;padding:7px 8px;background:#141926;border:1px solid var(--line);
+    border-radius:6px;cursor:pointer}
+  .mRow:hover{border-color:var(--gold)}
+  .mRow b{font-size:12.5px;color:#e6dbb8;white-space:nowrap}
+  .mRow .mSubjC{flex:1;font-size:11.5px;color:#a08c5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mRow .mRowDay{font-size:11px;color:#8d99b0;font-weight:600}
+  .mDot{width:7px;height:7px;border-radius:50%;background:var(--red);flex:0 0 auto}
   .mMail{background:#141926;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
   .mMail.mine{border-color:#3a4a2a}
-  .mHead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .mHead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;cursor:pointer}
   .mHead b{font-size:13px;color:#e6dbb8}
   .mHead .mDay{margin-left:auto;font-size:11px;color:#8d99b0;font-weight:600}
+  .mHead .mClose{margin-left:6px;font-size:10px;color:#8d99b0;text-transform:uppercase;letter-spacing:.5px}
   .mSubj{font-size:14px;font-weight:800;color:#e9d19a;margin:4px 0 6px}
   .mBody{color:#cfd6e6;font-size:12.5px;line-height:1.45;white-space:pre-wrap}
   .mAns{color:#7fe0c1;font-size:12px;font-weight:600;margin-top:6px}
   .mReplies{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
   .rbtn{padding:5px 11px;border-radius:6px;background:#1a2131;border:1px solid var(--line);color:#dfe6f0;font-size:12px;cursor:pointer}
   .rbtn:hover{border-color:var(--gold);background:#232c3f}
-  .mSelect{background:#1a2131;border:1px solid var(--line);color:#dfe6f0;padding:6px 8px;border-radius:6px;flex:1}
-  .mHint{color:#8d99b0;font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:none}
-  #mSubj{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-  #mSubj .chip.on{border-color:var(--gold);background:#3b2f10;color:#f0d58a}
+  #mComposeBtnWrap{margin-bottom:7px}
+  #mComposeBtn{width:100%}
+  #mCompose{background:#10141d;border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:7px}
+  #mCompose .mSelect{width:100%;margin-bottom:7px}
+  .mSelect{background:#1a2131;border:1px solid var(--line);color:#dfe6f0;padding:6px 8px;border-radius:6px}
+  .mSubjChips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+  .mSubjChips .chip.on{border-color:var(--gold);background:#3b2f10;color:#f0d58a}
+  .mComposeBtns{display:flex;gap:6px}
 
   #end{
     position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;
@@ -396,6 +387,25 @@
     <button class="bigbtn shop" id="mShop">&#65291; Shop</button>
     <button class="bigbtn battle" id="mBattle">&#9876; Battle</button>
 
+    <div class="card" id="newsCard">
+      <h3>&#128240; THE CONTINENTAL <small>daily paper</small></h3>
+      <div id="newsPanel"></div>
+    </div>
+
+    <div class="card" id="mailCard">
+      <h3>&#128231; Diplomatic pouch</h3>
+      <div id="mComposeBtnWrap"><button class="btn" id="mComposeBtn">&#9998; Compose a note</button></div>
+      <div id="mCompose" style="display:none">
+        <select id="mTo" class="mSelect"><option value="">Choose a nation&hellip;</option></select>
+        <div class="mSubjChips" id="mSubj"></div>
+        <div class="mComposeBtns">
+          <button class="btn on" id="mSend" disabled>&#128231; Post</button>
+          <button class="btn" id="mCancel">Cancel</button>
+        </div>
+      </div>
+      <div id="mList" class="mList"></div>
+    </div>
+
     <div class="card">
       <h3>War map &mdash; power</h3>
       <div id="ranks"></div>
@@ -465,34 +475,6 @@
         <label class="sub" style="display:flex;gap:6px;align-items:center;margin-top:7px;cursor:pointer">
           <input type="checkbox" id="ordMode" checked> map click on a flashing border = send units
         </label>
-      </div>
-    </div>
-
-    <div id="pgNews" style="display:none">
-      <div class="paper">
-        <div class="masthead">
-          <h2>THE CONTINENTAL</h2>
-          <div class="mastSub">Wartime edition &middot; every front, every day &middot; compiled by the war correspondents of Europe</div>
-        </div>
-        <div id="newsList" class="newsList"><div class="sub" style="padding:12px">No dispatches yet &mdash; the typographers are waiting for news from the front.</div></div>
-        <div class="mastSub" style="text-align:center;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.07)">&mdash; END OF ISSUE &mdash;</div>
-      </div>
-    </div>
-
-    <div id="pgMail" style="display:none">
-      <div class="card">
-        <h3>&#128231; Diplomatic pouch <span class="mHint">The post pauses the war while it is open.</span></h3>
-        <div id="mList" class="mList"><div class="sub" style="padding:12px">The pigeon loft is quiet. You may have to wait a while for a reply.</div></div>
-      </div>
-      <div class="card">
-        <h3>Send a note <small>five subjects &middot; composing pauses the war</small></h3>
-        <div class="row" style="margin-top:4px"><span>To</span>
-          <select id="mTo" class="mSelect">
-            <option value="">Choose a nation&hellip;</option>
-          </select>
-        </div>
-        <div class="chips" id="mSubj"></div>
-        <button class="btn on" id="mSend" disabled>&#128231; Post it</button>
       </div>
     </div>
   </div>
@@ -1542,21 +1524,14 @@ function flash(msg){
 /* ---------- pages: Shop / Battle ---------- */
 var PAGE=null;
 function showPage(p){
-  var was=PAGE;
-  PAGE=(p==='shop'||p==='battle'||p==='news'||p==='mail')?p:null;
-  if(was==='mail' && PAGE!=='mail') mailResume();
+  PAGE=(p==='shop'||p==='battle')?p:null;
   var pv=document.getElementById('page');
   pv.style.display=PAGE?'flex':'none';
   document.getElementById('pgShop').style.display=(PAGE==='shop')?'block':'none';
   document.getElementById('pgBattle').style.display=(PAGE==='battle')?'block':'none';
-  document.getElementById('pgNews').style.display=(PAGE==='news')?'block':'none';
-  document.getElementById('pgMail').style.display=(PAGE==='mail')?'block':'none';
   var t=document.getElementById('pageT');
   t.className=PAGE?PAGE+'T':'';
-  t.textContent=PAGE==='shop' ? '\u{1F6CD}  Shop' :
-    (PAGE==='battle' ? '\u2694  Battle' : (PAGE==='news' ? '\u{1F4F0}  Newspaper' : (PAGE==='mail' ? '\u2709  Diplomatic Pouch' : '')));
-  if(PAGE==='news') NEWS_SEEN_DAY=(S.news&&S.news.length)? S.news[0].d : S.day;
-  if(PAGE==='mail'){ mailPauseOpen(); markMailRead(); }
+  t.textContent=PAGE==='shop' ? '\u{1F6CD}  Shop' : (PAGE==='battle' ? '\u2694  Battle' : '');
   render();
 }
 function closePage(){ showPage(null); }
@@ -2652,18 +2627,14 @@ function newsElim(){
   });
 }
 function paintNews(){
-  if(PAGE!=='news') return;
-  var el=document.getElementById('newsList');
+  var el=document.getElementById('newsPanel');
   if(!el) return;
-  var nw=S.news||[], h='',i;
-  for(i=nw.length-1;i>=0;i--){
-    var it=nw[i];
-    h+='<div class="article"><span class="aTag">'+(it.cap?'special dispatch':'front-line report')+'</span>'+
-       '<h4 class="aH'+(it.cap?' capital':'')+'">'+it.h+'</h4>'+
-       '<div class="aMeta">'+dayMeta(it.d)+' &middot; war correspondent</div>'+
-       '<div class="aBody">'+it.b+'</div></div>';
-  }
-  el.innerHTML=h||'<div class="sub" style="padding:12px">No dispatches yet &mdash; the typographers are waiting for news from the front.</div>';
+  var nw=S.news||[];
+  if(!nw.length){ el.innerHTML='<div class="sub">No dispatches yet &mdash; the typographers are waiting for news from the front.</div>'; return; }
+  var it=nw[nw.length-1];
+  el.innerHTML='<div class="sNewsH">'+it.h+'</div>'+
+    '<div class="sNewsM">'+dayMeta(it.d)+' &middot; '+(it.cap?'special dispatch':'front-line report')+'</div>'+
+    '<div class="sNewsB">'+it.b+'</div>';
 }
 function updateNewsBadge(){
   var nb=document.getElementById('nbNews');
@@ -2676,7 +2647,8 @@ function updateNewsBadge(){
 document.getElementById('bNews').onclick=function(){
   NEWS_SEEN_DAY=(S.news&&S.news.length)? S.news[0].d : S.day;
   updateNewsBadge();
-  showPage('news');
+  var c=document.getElementById('newsCard');
+  if(c && c.scrollIntoView) c.scrollIntoView({behavior:'smooth',block:'nearest'});
 };
 
 /* =======================================================================
@@ -2687,21 +2659,25 @@ document.getElementById('bNews').onclick=function(){
    mail, mood and pacts live in S and travel with the broadcast state; guests
    post their replies and notes back to the host as commands.
    ======================================================================= */
-var MAIL_SUBJ=null, MAIL_OPEN=false, MAIL_PREV=0;
+var MAIL_SUBJ=null, MAIL_FOCUS=null, MAIL_PREV=0;
 
-function mailPauseOpen(){
-  if(MAIL_OPEN) return;
-  MAIL_OPEN=true; MAIL_PREV=spd;
-  setSpeed(0);
+/* opening a letter or the compose form pauses the war until it is closed */
+function setMailFocus(v){
+  var was=(MAIL_FOCUS!==null);
+  MAIL_FOCUS=v;
+  var now=(MAIL_FOCUS!==null);
+  if(now && !was){ MAIL_PREV=spd; setSpeed(0); }
+  else if(!now && was){ if(MAIL_PREV>0) setSpeed(MAIL_PREV); }
 }
-function mailResume(){
-  if(!MAIL_OPEN) return;
-  MAIL_OPEN=false;
-  if(MAIL_PREV>0) setSpeed(MAIL_PREV);
-}
-function markMailRead(){
+function openMail(id){
   var me=S.player;
-  (S.mail||[]).forEach(function(m){ if(m.to===me) m.read=true; });
+  (S.mail||[]).forEach(function(m){ if(m.id===id && m.to===me) m.read=true; });
+  setMailFocus(id);
+  render();
+}
+function toggleCompose(){
+  if(MAIL_FOCUS==='compose') setMailFocus(null); else setMailFocus('compose');
+  render();
 }
 function humanNations(){
   if(NET && NET.mode===1){ var a=Object.keys(NET.seats||{}); if(a.length) return a; }
@@ -2911,52 +2887,71 @@ function mailWarEvent(nu,old){
   }
 }
 
-/* ---------- mail UI ---------- */
+/* ---------- mail UI (right sidebar) ---------- */
 function paintMail(){
-  if(PAGE!=='mail') return;
   var el=document.getElementById('mList');
   if(!el) return;
   var me=S.player, ms=(S.mail||[]).filter(function(m){ return m.to===me || m.from===me; }).slice().reverse();
   var h='';
   if(!ms.length){
-    h='<div class="sub" style="padding:12px">The pigeon loft is quiet. You may have to wait a while for a reply.</div>';
+    h='<div class="sub">The pigeon loft is quiet. You may have to wait a while for a reply.</div>';
   } else {
     ms.forEach(function(m){
       var mine=(m.from===me);
-      var who=mine
-        ? 'You <span style="color:#8d99b0">&rsaquo; '+Nname(m.to)+'</span>'
-        : (NBY[m.from]? NBY[m.from].flag+' '+Nname(m.from) : Nname(m.from));
-      h+='<div class="mMail'+(mine?' mine':'')+'">';
-      h+='<div class="mHead"><b>'+who+'</b><span class="mDay">'+dayMeta(m.day)+'</span></div>';
-      h+='<div class="mSubj">'+m.sub+'</div>';
-      h+='<div class="mBody">'+m.body+'</div>';
-      if(m.answered){ h+='<div class="mAns">You replied: '+m.answered+'</div>'; }
-      else if(!mine && m.replies && m.replies.length){
-        h+='<div class="mReplies">';
-        m.replies.forEach(function(r,ri){
-          h+='<button class="rbtn" data-id="'+m.id+'" data-ri="'+ri+'">'+r.t+'</button>';
-        });
+      var who=mine ? 'You \u2192 '+Nname(m.to) : (NBY[m.from]? NBY[m.from].flag+' '+Nname(m.from) : Nname(m.from));
+      if(MAIL_FOCUS!==m.id){
+        h+='<div class="mRow" data-mid="'+m.id+'">'+
+           '<b>'+who+'</b>'+
+           '<span class="mSubjC">'+m.sub+'</span>'+
+           '<span class="mRowDay">D'+m.day+'</span>'+
+           ((!mine && !m.read)? '<span class="mDot"></span>' : '')+
+           '</div>';
+      } else {
+        h+='<div class="mMail'+(mine?' mine':'')+'">'+
+           '<div class="mHead" data-mid="'+m.id+'"><b>'+who+'</b><span class="mDay">'+dayMeta(m.day)+'</span><span class="mClose">&#9650; close</span></div>'+
+           '<div class="mSubj">'+m.sub+'</div>'+
+           '<div class="mBody">'+m.body+'</div>';
+        if(m.answered){ h+='<div class="mAns">You replied: '+m.answered+'</div>'; }
+        else if(!mine && m.replies && m.replies.length){
+          h+='<div class="mReplies">';
+          m.replies.forEach(function(r,ri){ h+='<button class="rbtn" data-id="'+m.id+'" data-ri="'+ri+'">'+r.t+'</button>'; });
+          h+='</div>';
+        }
         h+='</div>';
       }
-      h+='</div>';
     });
   }
   el.innerHTML=h;
+  Array.prototype.forEach.call(el.querySelectorAll('.mRow'),function(b){
+    b.onclick=function(){ openMail(+b.getAttribute('data-mid')); };
+  });
+  Array.prototype.forEach.call(el.querySelectorAll('.mHead'),function(b){
+    b.onclick=function(){ setMailFocus(null); render(); };
+  });
   Array.prototype.forEach.call(el.querySelectorAll('.rbtn'),function(b){
     b.onclick=function(){ doReply(+b.getAttribute('data-id'), +b.getAttribute('data-ri')); };
   });
   paintCompose();
 }
 function paintCompose(){
+  var box=document.getElementById('mCompose');
+  var btn=document.getElementById('mComposeBtn');
+  if(!box || !btn) return;
+  var open=(MAIL_FOCUS==='compose');
+  box.style.display=open?'block':'none';
+  btn.innerHTML=open? '&#10005; Cancel composing' : '&#9998; Compose a note';
+  if(!open){ MAIL_SUBJ=null; box.dataset.built=''; return; }
   var sel=document.getElementById('mTo');
-  if(!sel) return;
-  var me=S.player, cur=sel.value, h='<option value="">Choose a nation&hellip;</option>';
-  NATIONS.forEach(function(n){
-    if(n.id===me || n.id==='iceland') return;
-    if(landOf(n.id)===0 && unitsOf(n.id).length===0) return;
-    h+='<option value="'+n.id+'">'+n.flag+' '+n.name+'</option>';
-  });
-  sel.innerHTML=h; sel.value=cur;
+  if(sel && box.dataset.built!=='1'){
+    var me=S.player, cur=sel.value, h='<option value="">Choose a nation&hellip;</option>';
+    NATIONS.forEach(function(n){
+      if(n.id===me || n.id==='iceland') return;
+      if(landOf(n.id)===0 && unitsOf(n.id).length===0) return;
+      h+='<option value="'+n.id+'">'+n.flag+' '+n.name+'</option>';
+    });
+    sel.innerHTML=h; sel.value=cur;
+    box.dataset.built='1';
+  }
   var chips=document.getElementById('mSubj');
   if(chips){
     chips.innerHTML='';
@@ -2972,9 +2967,10 @@ function paintCompose(){
   if(send) send.disabled=!(sel.value && MAIL_SUBJ);
 }
 function doReply(id,ri){
-  if(NET && NET.mode===2){ netPubRoom('cmd',JSON.stringify({p:NET.pid,k:'mail',id:id,ri:ri})); return; }
+  if(NET && NET.mode===2){ netPubRoom('cmd',JSON.stringify({p:NET.pid,k:'mail',id:id,ri:ri})); setMailFocus(null); return; }
   applyReplyFor(S.player,id,ri);
   if(NET && NET.mode===1) NET.dirty=true;
+  setMailFocus(null);
   render();
 }
 function doSend(){
@@ -2983,6 +2979,8 @@ function doSend(){
   if(NET && NET.mode===2){ netPubRoom('cmd',JSON.stringify({p:NET.pid,k:'mail',c:1,to:to,sub:MAIL_SUBJ})); }
   else sendMailFor(S.player,to,MAIL_SUBJ);
   if(NET && NET.mode===1) NET.dirty=true;
+  MAIL_SUBJ=null;
+  setMailFocus(null);
   render();
 }
 function updateMailBadge(){
@@ -2993,8 +2991,15 @@ function updateMailBadge(){
   nb.style.display=un?'inline-flex':'none';
   nb.textContent=un;
 }
-document.getElementById('bMail').onclick=function(){ showPage('mail'); };
+document.getElementById('bMail').onclick=function(){
+  var c=document.getElementById('mailCard');
+  if(c && c.scrollIntoView) c.scrollIntoView({behavior:'smooth',block:'nearest'});
+};
 (function(){
+  var cb=document.getElementById('mComposeBtn');
+  if(cb) cb.onclick=function(){ toggleCompose(); };
+  var cancel=document.getElementById('mCancel');
+  if(cancel) cancel.onclick=function(){ setMailFocus(null); render(); };
   var sel=document.getElementById('mTo');
   if(sel) sel.onchange=function(){ paintCompose(); };
   var send=document.getElementById('mSend');

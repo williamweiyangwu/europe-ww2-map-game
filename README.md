@@ -33,23 +33,23 @@ browser except the topics above.
 | --- | --- |
 | `S` | Open the Shop |
 | `B` | Open the Battle page |
-| `N` | Read the daily paper |
-| `M` | Open the diplomatic pouch |
+| `N` | Jump to the newspaper (right sidebar) |
+| `M` | Jump to the diplomatic pouch (right sidebar) |
 | `Esc` | Return to the map |
 | `Space` | Pause / resume |
 
-While the war runs, hit **News** (or `N`) to read **The Continental** — a newspaper
-written from what actually happened on the map: who occupied what, with which
-machines (a German *Panzer VIII Maus* leading the way into Poland), and who was
-wiped off the map. Captures, collapsed treasuries, vanished nations, and the
-unveiling of legendary weapons all reach the front page. A fresh edition arrives
-every ten days, replacing the last.
+The **right sidebar** holds **The Continental** — a newspaper written from what
+actually happened on the map: who occupied what, with which machines (a German
+*Panzer VIII Maus* leading the way into Poland), and who was wiped off the map.
+Captures, collapsed treasuries, vanished nations, and the unveiling of legendary
+weapons all reach the front page. A fresh edition arrives every ten days,
+replacing the last.
 
-Hit **Mail** (or `M`) to open the **diplomatic pouch**. Other nations write to you,
-and every letter offers between two and four replies — accept a pact, make peace,
-or answer a threat with force. You can also post your own notes under five
-subjects: offer an alliance, a trade deal, congratulations, a warning, or an
-ultimatum. Reading and composing pauses the war until you close the desk.
+The sidebar also holds the **diplomatic pouch**. Other nations write to you, and
+every letter offers between two and four replies — accept a pact, make peace, or
+answer a threat with force. You can also post your own notes under five subjects:
+offer an alliance, a trade deal, congratulations, a warning, or an ultimatum.
+Opening a letter or composing a note pauses the war until you close it.
 
 ## Rules worth knowing
 
