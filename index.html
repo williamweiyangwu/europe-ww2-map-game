@@ -42,6 +42,11 @@
   .btn.danger{border-color:#6b2b2b}
   .btn.danger:hover{background:#3a1f1f}
   #dateBox b{color:#9fc4ff}
+  .badge{
+    display:none;margin-left:6px;background:var(--red);color:#fff;font:700 10px/1.4 "Segoe UI",system-ui,sans-serif;
+    min-width:15px;height:15px;padding:0 4px;border-radius:8px;align-items:center;justify-content:center;vertical-align:2px;
+  }
+  .badge.on{display:inline-flex}
 
   /* ---------- layout ---------- */
   #main{flex:1;display:flex;min-height:0}
@@ -121,6 +126,32 @@
   .chip.friend{border-color:#2f5b3a}
   .chip.friend:hover{border-color:var(--green);background:#1c2a1f}
   .chip i{font-style:normal;color:#a7b3c8;font-size:11px;font-weight:600}
+
+  /* ---- the daily paper ---- */
+  .paper{
+    max-width:860px;margin:0 auto;background:linear-gradient(#241c10,#190f06 120%);
+    border:1px solid #5a4a2a;border-radius:4px;padding:26px 34px 18px;
+    box-shadow:0 20px 60px #0009;
+  }
+  .masthead{text-align:center;padding-bottom:14px;margin-bottom:16px;border-bottom:3px double #7a6840}
+  .masthead h2{
+    font:900 40px/1 Georgia,"Times New Roman",serif;letter-spacing:6px;color:#e9d19a;margin:0 0 4px;
+  }
+  .masthead .mastSub{color:#a08c5f;font-size:11.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+  .newsList{display:flex;flex-direction:column}
+  .article{border-bottom:1px solid #44381f;padding:14px 4px}
+  .article:last-child{border-bottom:none}
+  .aTag{
+    display:inline-block;font:700 10px/1.2 georgia,serif;letter-spacing:2px;text-transform:uppercase;
+    color:#0b0e14;background:#c9a15a;border-radius:2px;padding:3px 7px;margin-bottom:8px;
+  }
+  .aH{
+    font:800 23px/1.22 Georgia,"Times New Roman",serif;color:#f0e2be;margin:0 0 7px;letter-spacing:.2px;
+  }
+  .aH.capital{color:#ffdbb2}
+  .aMeta{font:700 11px/1.3 "Segoe UI",sans-serif;color:#8d7f57;letter-spacing:.6px;margin-bottom:8px}
+  .aBody{font:600 13.5px/1.55 Georgia,"Times New Roman",serif;color:#d9c9a4}
+  .aBody b{color:#f0e2be}
 
   /* ---- neighbouring garrisons ---- */
   #bGar{margin-top:7px;border-top:1px solid var(--line);padding-top:6px;
@@ -250,6 +281,8 @@
   .pageWrap{flex:1;overflow:auto;padding:18px 22px 40px}
   .pageWrap>.card{max-width:640px;margin:0 auto 14px}
   #pageT.shopT{color:var(--gold)}
+  #pageT.battleT{color:var(--red)}
+  #pageT.newsT{color:#e9d19a}
   #pageT.battleT{color:#f0a5a5}
 
   #end{
@@ -318,6 +351,7 @@
   <button class="btn" data-sp="2">2&times;</button>
   <button class="btn" data-sp="3">3&times;</button>
   <button class="btn" id="bFocus">My front</button>
+  <button class="btn" id="bNews">&#128240; News<span class="badge" id="nbNews"></span></button>
   <button class="btn" id="bNet">&#127760; Multi</button>
   <button class="btn danger" id="bNew">New war</button>
 </div>
@@ -412,6 +446,17 @@
         <label class="sub" style="display:flex;gap:6px;align-items:center;margin-top:7px;cursor:pointer">
           <input type="checkbox" id="ordMode" checked> map click on a flashing border = send units
         </label>
+      </div>
+    </div>
+
+    <div id="pgNews" style="display:none">
+      <div class="paper">
+        <div class="masthead">
+          <h2>THE CONTINENTAL</h2>
+          <div class="mastSub">Wartime edition &middot; every front, every day &middot; compiled by the war correspondents of Europe</div>
+        </div>
+        <div id="newsList" class="newsList"><div class="sub" style="padding:12px">No dispatches yet &mdash; the typographers are waiting for news from the front.</div></div>
+        <div class="mastSub" style="text-align:center;padding:10px 0 2px;border-top:1px solid rgba(255,255,255,.07)">&mdash; END OF ISSUE &mdash;</div>
       </div>
     </div>
   </div>
@@ -1073,7 +1118,7 @@ function declareWar(a,b){
 
 function newGame(player){
   S={ player:player, day:0, uid:0, sel:player, pick:new Set(), log:[], over:null, wars:new Set(),
-      prov:{}, units:[], targets:[], aggro:{}, aiT:{}, orderMode:true, gold:{} };
+      prov:{}, units:[], targets:[], aggro:{}, aiT:{}, orderMode:true, gold:{}, news:[], elimSet:new Set(), brokeSet:new Set() };
   ALL.forEach(function(n){
     var home=(n.id!=='iceland' && !n.owner);
     S.prov[n.id]={ id:n.id, owner:(n.owner||n.id), units:[], mines:home?2:0, mineBy:home?n.id:null, mineT:5 };
@@ -1237,6 +1282,7 @@ function tick(){
   }
 
   /* --- capture --- */
+  var capEv=[];
   for(var id3 in S.prov){
     var pp=S.prov[id3], c={};
     unitsAt(id3).forEach(function(u){ c[u.owner]=(c[u.owner]||0)+1; });
@@ -1245,12 +1291,14 @@ function tick(){
       var old=pp.owner, nu=ks[0];
       pp.owner=nu;
       pp.mines=0; pp.mineBy=null;
+      capEv.push({taker:nu, prov:id3, old:old, d:S.day});
       invalidateWars();
       if(nu===S.player || old===S.player) declareWar(S.player, (nu===S.player?old:nu));
       if(nu===S.player || old===S.player) log(captureMsg(nu,pp.id,old,'captured'));
       else if(Math.random()<0.18) log(captureMsg(nu,pp.id,old,'took'));
     }
   }
+  if(capEv.length){ newsCaptures(capEv); newsElim(); }
 
   /* --- income: mine fields only --- */
   ALL.forEach(function(n){
@@ -1268,6 +1316,7 @@ function tick(){
       if(costy.owner===S.player)
         log('Treasury empty - your '+UNITS[costy.type].name.toLowerCase()+' was disbanded to pay the bills.');
     }
+    if(S.gold[n.id]<=-40 && !S.brokeSet.has(n.id)){ S.brokeSet.add(n.id); newsCollapse(n.id); }
   });
 
   aiTurn();
@@ -1328,6 +1377,7 @@ function aiTurn(){
         if(spot){
           spawn(choice,spot,n.id);
           S.gold[n.id]-=UNITS[choice].cost;
+          if(SHOWCASE[choice]) newsUnveil(n.id,choice,spot);
         }
       }
     }
@@ -1432,6 +1482,7 @@ function recruit(type){
   if((S.gold[S.player]||0)<u.cost){ flash('Not enough gold for a '+u.name.toLowerCase()+' ('+u.cost+').'); return; }
   S.gold[S.player]-=u.cost;
   spawn(type,id,S.player);
+  if(SHOWCASE[type]) newsUnveil(S.player,type,id);
   S.pick.clear(); unitsAt(id).forEach(function(x){ S.pick.add(x.id); });
   if(NET && NET.mode===2) netPubRoom('cmd',JSON.stringify({p:NET.pid,k:'r',t:type,loc:id}));
   if(NET && NET.mode===1) NET.dirty=true;
@@ -1449,14 +1500,17 @@ function flash(msg){
 /* ---------- pages: Shop / Battle ---------- */
 var PAGE=null;
 function showPage(p){
-  PAGE=(p==='shop'||p==='battle')?p:null;
+  PAGE=(p==='shop'||p==='battle'||p==='news')?p:null;
   var pv=document.getElementById('page');
   pv.style.display=PAGE?'flex':'none';
   document.getElementById('pgShop').style.display=(PAGE==='shop')?'block':'none';
   document.getElementById('pgBattle').style.display=(PAGE==='battle')?'block':'none';
+  document.getElementById('pgNews').style.display=(PAGE==='news')?'block':'none';
   var t=document.getElementById('pageT');
   t.className=PAGE?PAGE+'T':'';
-  t.textContent=PAGE==='shop' ? '\u{1F6CD}  Shop' : (PAGE==='battle' ? '\u2694  Battle' : '');
+  t.textContent=PAGE==='shop' ? '\u{1F6CD}  Shop' :
+    (PAGE==='battle' ? '\u2694  Battle' : (PAGE==='news' ? '\u{1F4F0}  Newspaper' : ''));
+  if(PAGE==='news') NEWS_SEEN=S.news.length;
   render();
 }
 function closePage(){ showPage(null); }
@@ -1702,6 +1756,8 @@ function render(){
     }
   }
   renderPanel();
+  paintNews();
+  updateNewsBadge();
 }
 function warAround(id){
   var o=S.prov[id].owner;
@@ -1930,6 +1986,7 @@ function wireTop(){
     if(e.code==='Space'){ e.preventDefault(); setSpeed(spd===0?1:0); return; }
     if(e.key==='s'||e.key==='S'){ e.preventDefault(); showPage('shop'); return; }
     if(e.key==='b'||e.key==='B'){ e.preventDefault(); showPage('battle'); return; }
+    if(e.key==='n'||e.key==='N'){ e.preventDefault(); document.getElementById('bNews').click(); return; }
     if(e.key==='Escape'){ closePage(); return; }
   });
 }
@@ -2300,7 +2357,8 @@ function netStateOut(){
     return o;
   });
   return {v:1, day:S.day, uid:S.uid, wars:wars, prov:prov, units:units,
-          gold:S.gold, log:S.log.slice(-20), over:!!S.over};
+          gold:S.gold, log:S.log.slice(-20), over:!!S.over,
+          news:S.news.slice(-30), elim:Array.prototype.slice.call(S.elimSet||[])};
 }
 function applyNetState(o){
   if(!o || o.v!==1) return;
@@ -2317,6 +2375,8 @@ function applyNetState(o){
   for(var k in (o.prov||{})){ var p=o.prov[k]; S.prov[k]={id:k, owner:p.o, units:[], mines:p.m, mineBy:p.mb, mineT:p.mt}; }
   if(o.gold) S.gold=o.gold;
   S.log=o.log||S.log;
+  S.news=o.news||[];
+  S.elimSet=new Set(o.elim||[]);
   NET.lastState=Date.now();
   if(NET.hostOfflineWarned){ NET.hostOfflineWarned=false; }
   render();
@@ -2358,6 +2418,7 @@ function netApplyCmd(nat,msg){
     if((S.gold[nat]||0)<uu.cost) return;
     S.gold[nat]-=uu.cost;
     spawn(msg.t,msg.loc,nat);
+    if(SHOWCASE[msg.t]) newsUnveil(nat,msg.t,msg.loc);
     NET.dirty=true;
   }
 }
@@ -2400,6 +2461,160 @@ document.getElementById('nlCancel').onclick=function(){
 document.getElementById('nlGo').onclick=function(){ if(NET.mode===1) netHostStart(); };
 document.getElementById('netCode').onkeydown=function(e){ if(e.key==='Enter'){ try{ document.getElementById('bJoin').click(); }catch(err){} } };
 document.getElementById('netName').onkeydown=function(e){ if(e.key==='Enter'){ try{ document.getElementById('bHost').click(); }catch(err){} } };
+
+/* =======================================================================
+   13. NEWSROOM
+   The daily paper: what is happening on the map, told like a 1939 edition.
+   The host is the only one who writes dispatches; guests read S.news via
+   the broadcast state, so the whole room shares the same front page.
+   ======================================================================= */
+var NEWS_SEEN=0;
+var SHOWCASE={heavy:1, rocket:1, hnky:1};
+var N_MONTH=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function dayFull(d){
+  var dt=new Date(1939,8,1+d);
+  return N_MONTH[dt.getMonth()]+' the '+dt.getDate();
+}
+function dayMeta(d){
+  var dt=new Date(1939,8,1+d);
+  return N_MONTH[dt.getMonth()]+' the '+dt.getDate()+', '+dt.getFullYear();
+}
+function Nname(id){
+  if(id==='ussr') return 'the Soviet Union';
+  if(id==='uk') return 'the United Kingdom';
+  return NBY[id]?NBY[id].name:id;
+}
+function newsCanvas(){ return !(NET && NET.mode===2); }
+function pick(a){ return a[(Math.random()*a.length)|0]; }
+function news(h,b,cap){
+  if(!newsCanvas()) return;
+  S.news.push({d:S.day, h:h, b:b, cap:!!cap});
+  if(S.news.length>40) S.news.shift();
+}
+function unitFancy(nid,type){
+  var a=arsenal(nid,'army')||[], b=arsenal(nid,'air')||[], e=null,i;
+  for(i=0;i<a.length;i++) if(a[i].type===type) e=a[i];
+  if(!e) for(i=0;i<b.length;i++) if(b[i].type===type) e=b[i];
+  return e? e.name : UNITS[type].name;
+}
+/* how newsworthy a machine is - the heaviest thing on the field leads the story */
+var RENOWN={'hnky':6,'heavy':6,'rocket':5,'bomber':5,'dive':4,'tank':4,'fighter':3,'artillery':3,'assault':3,
+            'antitank':2,'flak':2,'engineer':2,'motor':2,'infantry':1,'mine':0};
+function unitLead(prov,taker){
+  var best=null,bs=0;
+  unitsAt(prov).forEach(function(u){
+    if(u.owner!==taker) return;
+    var r=RENOWN[u.type]||1;
+    if(r>bs){ bs=r; best=u; }
+  });
+  return best;
+}
+/* each day, every capture on the map is bundled per conqueror into one story */
+function newsCaptures(evs){
+  if(!newsCanvas()) return;
+  var groups={},i;
+  for(i=0;i<evs.length;i++){ (groups[evs[i].taker]=groups[evs[i].taker]||[]).push(evs[i]); }
+  for(var tk in groups){
+    var g=groups[tk];
+    var tn=Nname(tk);
+    var names=g.map(function(e){ return Nname(e.prov); });
+    var list=names.length===1? names[0] : names.slice(0,-1).join(', ')+' and '+names[names.length-1];
+    var first=g[0];
+    var lead=unitLead(first.prov, tk);
+    var ln=lead? unitFancy(tk, lead.type) : null;
+    var isCap=names.length===1 && first.prov===first.old;   /* the enemy's own homeland has fallen */
+    var headline= isCap
+      ? pick([tn+' storms '+Nname(first.old)+' itself',
+              'The heart of '+Nname(first.old)+' has fallen to '+tn,
+              tn+' raises its colours over '+Nname(first.old)])
+      : pick([tn+' recently occupied '+list,
+              tn+' captures '+list,
+              tn+' sweeps into '+list,
+              tn+' seizes '+list]);
+    var verb=pick(['occupied','overran','swept across','seized']);
+    var body='On '+dayFull(first.d)+', the army of <b>'+tn+'</b> '+verb+' <b>'+list+'</b>. ';
+    if(ln){
+      var t=UNITS[lead.type];
+      if(t.air) body+='Squadrons of the <b>'+ln+'</b> burned the roads ahead of the columns. ';
+      else if(t.atk>=20) body+='The assault was led by the <b>'+ln+'</b>; nothing in the garrison was heavy enough to stop it. ';
+      else if(t.def>=1.7) body+='Under the covering fire of the <b>'+ln+'</b>, the infantry moved up at first light. ';
+      else if(t.mines) body+='Sappers with the <b>'+ln+'</b> had seeded the approaches the night before. ';
+      else body+='The streets fell block by block, <b>'+ln+'</b> at the head of the line. ';
+    } else {
+      body+='Infantry poured over the border at first light, and the defenders gave way by noon. ';
+    }
+    body+= isCap
+      ? pick(['The flag of '+Nname(first.old)+' came down over its capital for the last time.',
+              'The garrison surrendered as the grey columns reached the government quarter; for the people of '+Nname(first.old)+', the war has come home.',
+              'Refugees streamed out of '+names[0]+' through the night - a nation with no army left and nowhere safe to wait.'])
+      : pick(['Refugee columns choked the roads out of '+names[0]+' until after dark.',
+              'Local radios fell silent the moment the first shells landed.',
+              'The frontier posts changed hands before the church bells finished ringing.',
+              'Maps in the foreign offices were redrawn with a straight line and a sigh.']);
+    news(headline, body, isCap);
+  }
+}
+function newsUnveil(nid,type,loc){
+  if(!newsCanvas()) return;
+  var tn=Nname(nid);
+  var ln=unitFancy(nid,type);
+  var t=UNITS[type];
+  var detail=t.air
+    ? pick(['Design bureaux across the continent have been told to answer it before the snow clears.',
+            'The airfields that can fly it count their mechanics carefully; there will be no spares.'])
+    : pick(['Engineers who worked on it say it is the heaviest thing ever put on tracks.',
+            'The proving grounds have been closed - the shots disturbed the border towns for a week.',
+            'Crews at the front already call it the end of the argument.']);
+  news(tn+' unveils the '+ln,
+    'On '+dayFull(S.day)+', '+tn+' paraded a new weapon for the armies at the front: the '+
+    t.name.toLowerCase()+' <b>'+ln+'</b>, shipped to '+Nname(loc)+'. '+detail, true);
+}
+function newsCollapse(nid){
+  if(!newsCanvas()) return;
+  news(Nname(nid)+' army collapses',
+    'On '+dayFull(S.day)+', the treasury of '+Nname(nid)+' closed its doors. With no gold to pay the troops, '+
+    'whole formations were stood down and sold for scrap - a front that once held the line now holds only arrears.', true);
+}
+function newsElim(){
+  if(!newsCanvas()) return;
+  ALL.forEach(function(n){
+    if(n.id==='iceland') return;
+    if(S.elimSet.has(n.id)) return;
+    if(landOf(n.id)===0 && unitsOf(n.id).length===0){
+      S.elimSet.add(n.id);
+      news(Nname(n.id)+' is wiped from the map',
+        'On '+dayFull(S.day)+', the last '+Nname(n.id)+' flag was lowered. After '+S.day+' days of war, '+
+        'the nation is a casualty list and a rumour - no army, no territory, no government left to receive the surrender. '+
+        'The continent fights on over the ruins.', true);
+    }
+  });
+}
+function paintNews(){
+  if(PAGE!=='news') return;
+  var el=document.getElementById('newsList');
+  if(!el) return;
+  var nw=S.news||[], h='',i;
+  for(i=nw.length-1;i>=0;i--){
+    var it=nw[i];
+    h+='<div class="article"><span class="aTag">'+(it.cap?'special dispatch':'front-line report')+'</span>'+
+       '<h4 class="aH'+(it.cap?' capital':'')+'">'+it.h+'</h4>'+
+       '<div class="aMeta">'+dayMeta(it.d)+' &middot; war correspondent</div>'+
+       '<div class="aBody">'+it.b+'</div></div>';
+  }
+  el.innerHTML=h||'<div class="sub" style="padding:12px">No dispatches yet &mdash; the typographers are waiting for news from the front.</div>';
+}
+function updateNewsBadge(){
+  var nb=document.getElementById('nbNews');
+  if(!nb) return;
+  var un=Math.max(0,(S.news?S.news.length:0)-(NEWS_SEEN||0));
+  nb.style.display=un?'inline-flex':'none';
+  nb.textContent=un;
+}
+document.getElementById('bNews').onclick=function(){
+  NEWS_SEEN=S.news.length;
+  updateNewsBadge();
+  showPage('news');
+};
 </script>
 </body>
 </html>

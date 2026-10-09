@@ -33,8 +33,16 @@ browser except the topics above.
 | --- | --- |
 | `S` | Open the Shop |
 | `B` | Open the Battle page |
+| `N` | Read the daily paper |
 | `Esc` | Return to the map |
 | `Space` | Pause / resume |
+
+While the war runs, hit **News** (or `N`) to read **The Continental** — a newspaper
+written from what actually happened on the map: who occupied what, with which
+machines (a German *Panzer VIII Maus* leading the way into Poland), and who was
+wiped off the map. Captures, collapsed treasuries, vanished nations, and the
+unveiling of legendary weapons all reach the front page. Guests receive the same
+edition as the host.
 
 ## Rules worth knowing
 
