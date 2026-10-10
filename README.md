@@ -49,7 +49,7 @@ The sidebar also holds the **diplomatic pouch**. Other nations write to you, and
 every letter offers between two and four replies — accept a pact, make peace, or
 answer a threat with force. You can also post your own notes under five subjects:
 offer an alliance, a trade deal, congratulations, a warning, or an ultimatum.
-Opening a letter or composing a note pauses the war until you close it.
+Opening the newspaper or a letter pauses the war until you close it.
 
 ## Rules worth knowing
 
