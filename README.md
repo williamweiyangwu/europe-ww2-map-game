@@ -55,7 +55,7 @@ Opening a letter or composing a note pauses the war until you close it.
 
 - Income is `mines x 4 gold/day`, minus unit upkeep. There is no passive territory income.
 - Gold under `-40` is bankruptcy.
-- A province holds at most **10** units.
+- Garrison capacity scales with a nation's size: about **6** units for the smallest states up to **17** for the Soviet Union.
 - Air units fly: they strike any enemy border province and return home.
 - Enemy garrisons are only visible in provinces bordering your territory.
 - Annexed regions (Iceland, Austria) belong to another nation and cannot be played.
