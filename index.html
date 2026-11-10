@@ -450,7 +450,7 @@
       <div id="bGar"></div>
     </div>
 
-    <button class="bigbtn shop" id="mShop">&#65291; Shop</button>
+    <button class="bigbtn shop" id="mShop" title="Shop (E)">&#65291; Shop <small>(E)</small></button>
     <button class="bigbtn battle" id="mBattle">&#9876; Battle</button>
 
     <div class="card" id="newsCard">
@@ -486,6 +486,7 @@
       riflemen and two mine fields at home &mdash; a major power far more than a micro-state.<br>
       There is <b>no daily income</b> &mdash; <b>mine fields are the only gold</b> in the game, mined at each
       nation's own rate. Buy mine cars to lay more, and take countries to grow your yield.<br>
+      Once you have chosen a nation, the Shop's <b>Tanks</b> tab lists that nation's own historical armour.<br>
       Click a country to open its sheet: a small map of the country with the units standing in it.
       Recruit in your own territory, then order units into a neighbouring country. Every front is a real front &mdash;
       the AI nations fight each other too, so a war can be won without fighting the whole continent.<br>
@@ -511,6 +512,10 @@
       <button class="b-online" id="bOnline">&#127760; Play online multiplayer</button>
       <button class="btn" id="bAchStart">&#127942; Achievements</button>
       <button class="btn" id="bContinue" style="display:none">&#128190; Continue saved war</button>
+      <button class="btn" id="bExportStart" title="Save a backup file outside the browser">&#128190; Backup progress</button>
+      <button class="btn" id="bImportStart" title="Restore progress from a backup file">&#128229; Restore backup</button>
+      <input type="file" id="bImportFileStart" accept="application/json,.json,text/plain" style="display:none">
+      <div class="sub" style="margin-top:6px;opacity:.8;max-width:620px">The war saves itself every few seconds. Clearing your browser's site data still erases it &mdash; press <b>Backup progress</b> first, then <b>Restore backup</b> afterwards.</div>
     </div>
   </div>
 </div>
@@ -527,6 +532,7 @@
         <div class="sub" id="shopHint" style="margin-bottom:8px">&nbsp;</div>
         <div class="tabs">
           <button class="tab" id="tabArmy">&#9876; Army</button>
+          <button class="tab" id="tabTanks">&#128737; Tanks</button>
           <button class="tab" id="tabAir">&#9992; Air Force</button>
           <span class="tabCount" id="shopCount"></span>
         </div>
@@ -636,8 +642,8 @@
         <div class="tutN">3</div>
         <div>
           <h4>Recruit &amp; move</h4>
-          <p>Click a territory you own to open it, pick a unit in the Shop. Then click
-          <b>Battle</b>, tick your units, and click a flashing border to send them into a
+          <p>Click a territory you own to open it, pick a unit in the Shop (<b>E</b>). Then open
+          <b>Battle</b> (<b>B</b>), tick your units, and click a flashing border to send them into a
           neighbouring country. <b>Select every unit on my fronts</b> grabs your whole line at once.
           They hold the ground until it falls, then the survivors retire home.</p>
         </div>
@@ -682,7 +688,7 @@
       <div class="sub" id="achHead" style="margin-bottom:6px">&nbsp;</div>
       <div id="achList"></div>
       <div style="margin-top:12px;padding-top:10px;border-top:1px solid #2a3548">
-        <div class="sub" style="opacity:.85">Your progress lives in this browser. If it keeps vanishing after you restart your computer, your browser is clearing site data on exit &mdash; export a backup here and you can restore it any time.</div>
+        <div class="sub" style="opacity:.85">Your campaign and achievements save themselves in this browser. Clearing your browser's site data still erases them &mdash; export a backup here first, then import it to restore everything.</div>
         <div style="margin-top:8px">
           <button class="btn" id="bExport">&#128190; Export backup</button>
           <button class="btn" id="bImport">&#128229; Import backup</button>
@@ -1468,13 +1474,171 @@ var EU_ARSENAL = {
     'rocket:Junkers Ju 87|German dive bombers never overflew Turkey in anger.',
     'hnky:Supermarine Spitfire|Spitfires were delivered in 1941 and did real work over the Straits.']}
 };
+
+/* ---------- each nation's tanks ----------
+   Same format as the arsenal above: chassis:DisplayName|blurb. The chassis
+   definitions are generated below from a handful of archetypes, so every
+   historical vehicle gets its own statistics while each nation keeps its own
+   names. A nation absent from this table fields no tanks, and the Shop hides
+   the Tanks tab for it.                                                      */
+var EU_TANKS = {
+  germany:[
+    'pz2:Panzer II|The light scout tank of the Blitzkrieg. Fast, thinly armoured, and everywhere in 1940.',
+    'pz38:Panzer 38(t)|A Czech design pressed into German service. Reliable and cheap to build.',
+    'pz3:Panzer III|The original anti-tank panzer. Outgunned by 1942, but it carried the desert war.',
+    'pz4:Panzer IV|The workhorse of the panzer divisions. Upgunned again and again, it fought to the end.',
+    'stug3:StuG III|A turretless assault gun. Low, hard to hit, and lethal from ambush.',
+    'panther:Panther|The best all-round tank of the war: fast, hard-hitting, and mechanically fragile.',
+    'tiger:Tiger I|A heavy tank built to terrify. It did, until it broke down.',
+    'tiger2:Tiger II|Seventy tons of armour and gun. Almost unbeatable, and almost impossible to keep running.'],
+  ussr:[
+    't26:T-26|The most numerous Soviet tank of 1941. Light, cheap, and hopelessly outmatched.',
+    'bt7:BT-7|A fast cavalry tank on Christie suspension. It could run rings around the invaders.',
+    't34:T-34|The great equaliser. Sloped armour, a good gun, and built in tens of thousands.',
+    't34_85:T-34-85|The T-34 with the gun it always deserved. A match for anything Germany fielded.',
+    'kv1:KV-1|A mobile fortress. German anti-tank guns simply bounced off it in 1941.',
+    'kv2:KV-2|A KV-1 carrying a huge howitzer. Slow, top-heavy, and terrifying in a street.',
+    'su85:SU-85|A T-34 hull with a tank-killing gun. No turret, and no mercy.',
+    'is2:IS-2|The Soviet answer to the Tiger. A 122 mm gun that ended arguments.'],
+  uk:[
+    'matilda:Matilda II|The Queen of the Desert. Slow, but almost immune to Italian guns.',
+    'valentine:Valentine|A reliable infantry tank, sent in huge numbers to the Soviet Union.',
+    'crusader:Crusader|The fast cruiser tank of the desert war. Elegant, and mechanically tired.',
+    'cromwell:Cromwell|The cruiser tank that carried the Normandy breakout. Fast and dependable.',
+    'churchill:Churchill VII|An infantry tank built like a trench. Slow, and nearly impossible to kill head-on.',
+    'firefly:Sherman Firefly|A Sherman with the 17-pounder. The best tank-killer in the west.',
+    'comet:Comet|The best British tank of the war. Fast, well-armed, and too late for most of it.'],
+  france:[
+    'ft:Renault FT|The grandfather of every tank. Still in service in 1940, in a few places.',
+    'r35:Renault R35|A well-armoured light tank with a weak gun. France built thousands.',
+    'h39:Hotchkiss H39|A nimble light tank. Good hull, poor turret, and no radio.',
+    'somua:SOMUA S35|The best French tank of 1940. Fast, well-armed, and far too few.',
+    'b1:Char B1 bis|A rolling fortress with a hull gun and a turret gun. Terrifying when it worked.',
+    'arl44:ARL 44|A post-war heavy tank built from pre-war parts. France\'s last word on armour.'],
+  italy:[
+    'l3:L3/35|A tankette with machine guns. Brave crews, hopeless machines.',
+    'm11:M11/39|Italy\'s first medium tank. A good gun in a hull mount, and no turret.',
+    'm13:M13/40|The standard Italian medium. Reasonable armour, and a gun that could not keep up.',
+    'm14:M14/41|A slightly better M13. More power, same thin armour.',
+    'semovente:Semovente 75/18|A self-propelled gun on a tank hull. Italy\'s best armoured vehicle.',
+    'p40:P26/40|Italy\'s heavy tank. Well-armed and well-armoured, and almost none were built.'],
+  poland:[
+    'tks:TKS|A tiny tankette with a machine gun. It still frightened German infantry.',
+    '7tp:7TP|A genuine light tank with a Bofors gun. Poland\'s best, and far too few.',
+    '4tp:4TP|A modern light tank design that never reached the troops in time.'],
+  czechoslovakia:[
+    'lt35:LT vz. 35|A solid light tank, better than most of its neighbours\' armour.',
+    'lt38:LT vz. 38|One of the best light tanks in the world in 1939. Germany took the factory.',
+    'st1:ST vz. 39|A medium tank design cut short by the occupation. On paper, a match for the Panzer III.'],
+  hungary:[
+    'toldi:38M Toldi|A light tank built on a Swedish design. Fast, and outgunned by 1942.',
+    'turan:40M Turan|A medium tank based on the Skoda T-21. The backbone of Hungarian armour.',
+    'zrinyi:Zrinyi II|A 105 mm assault gun. Hungary\'s best armoured vehicle of the war.',
+    'tas:44M Tas|A heavy tank prototype. It never saw service, but it could have changed the balance.'],
+  romania:[
+    'r1:R-1|A Czech light tank bought before the war. Obsolete by 1941.',
+    'r2:R-2|A licence-built Panzer 38(t). The best tank Romania had in numbers.',
+    'r35_ro:R35|French light tanks bought in 1939. Brave crews, weak guns.',
+    't3:T-3|A Panzer III in Romanian service. Reliable, and always too few.',
+    't4:T-4|A Panzer IV in Romanian markings. The heaviest armour Romania fielded.'],
+  yugoslavia:[
+    't15:Skoda T-15|A Czech light tank bought for the Yugoslav army. Good, and rare.',
+    'm3:M3 Stuart|American light tanks delivered in 1941. Fast, and thinly armoured.',
+    't32:Skoda T-32|A Czech medium tank design. Yugoslavia wanted it; history did not wait.'],
+  finland:[
+    'vickers6:Vickers 6-ton|A British light tank bought in the 1930s. The base for Finland\'s armour.',
+    't26_fi:T-26|Captured Soviet light tanks, pressed into Finnish service.',
+    'bt42:BT-42|A captured BT-7 hull with a British howitzer. Strange, and surprisingly effective.',
+    'stug3_fi:StuG III G|German assault guns that gave Finland a real anti-tank punch.'],
+  bulgaria:[
+    'pz38_bg:Panzer 38(t)|German-supplied light tanks. The core of Bulgarian armour.',
+    'pz4_bg:Panzer IV|German medium tanks, handed over as the war turned.',
+    'stug3_bg:StuG III|Assault guns that gave Bulgarian crews a chance against Soviet armour.'],
+  greece:[
+    'vickers6_gr:Vickers 6-ton|A handful of British light tanks. They fought, and were lost, in 1941.',
+    'ft_gr:Renault FT|First World War veterans, still on the Greek order of battle.'],
+  turkey:[
+    'vickers6_tr:Vickers 6-ton|British light tanks bought to modernise a neutral army.',
+    'm3_tr:M3 Stuart|American light tanks delivered in 1942. Turkey never fired them in anger.'],
+  belgium:[
+    't13:T-13|A Belgian tank destroyer on a light-tank chassis. Its 47 mm gun was genuinely dangerous.',
+    't15_be:T-15|A Belgian light tank, fast and thinly armoured. It met the Blitzkrieg in 1940.'],
+  netherlands:[
+    'vickers6_nl:Vickers 6-ton|The Dutch army\'s only real tanks, and only a handful of them.',
+    'm36:Marmon-Herrington CTLS|A light American tankette. Useful in the East Indies, not in Europe.'],
+  sweden:[
+    'strv_m39:Strv m/39|A Swedish light tank. Neutral, well-built, and never tested in a real war.',
+    'strv_m42:Strv m/42|A medium tank with a good gun. Sweden kept it at home, and that was the point.'],
+  spain:[
+    'panzer1:Panzer I|German light tanks that fought in Spain. Machine guns only, and enough.',
+    't26_es:T-26|Soviet light tanks sent to Spain. A generation ahead of what they faced.'],
+  switzerland:[
+    'lth:Panzerwagen 39|A Swiss light tank built for a war that never came. It was ready anyway.']
+};
+
+/* tank chassis archetypes: light -> super-heavy.  The role table below maps
+   every historical key to one archetype, so the chassis statistics live in
+   one place and every tank still has a unique type key for saves and the net. */
+var TANK_KEYS={};
+(function(){
+  var roles={
+    light:  {code:'LT' ,cost:85 ,hp:100,atk:17,def:1.30,up:1,col:'#8aa86a'},
+    light2: {code:'LT2',cost:95 ,hp:112,atk:20,def:1.35,up:1,col:'#7f9e5f'},
+    medium: {code:'MT' ,cost:120,hp:140,atk:26,def:1.45,up:2,col:'#6f9a5a'},
+    medium2:{code:'MT2',cost:140,hp:155,atk:30,def:1.50,up:2,col:'#5f8a4a'},
+    heavy:  {code:'HV' ,cost:180,hp:190,atk:36,def:1.75,up:3,col:'#4f7a3a'},
+    heavy2: {code:'HV2',cost:210,hp:215,atk:42,def:1.90,up:4,col:'#3f6a2a'},
+    td:     {code:'TD' ,cost:125,hp:115,atk:33,def:1.25,up:2,col:'#8a7a4a'},
+    spg:    {code:'SPG',cost:150,hp:150,atk:31,def:1.55,up:3,col:'#7a6a3a'},
+    super:  {code:'SUP',cost:240,hp:235,atk:46,def:2.00,up:5,col:'#2f5a1a'}
+  };
+  var role={
+    pz2:'light', pz38:'light2', pz3:'medium', pz4:'medium2', stug3:'spg',
+    panther:'heavy', tiger:'heavy2', tiger2:'super',
+    t26:'light', bt7:'light2', t34:'medium2', t34_85:'heavy', kv1:'heavy',
+    kv2:'heavy2', su85:'td', is2:'super',
+    matilda:'heavy', valentine:'medium', crusader:'medium', cromwell:'medium2',
+    churchill:'heavy2', firefly:'td', comet:'heavy',
+    ft:'light', r35:'light', h39:'light2', somua:'medium2', b1:'heavy', arl44:'heavy2',
+    l3:'light', m11:'light2', m13:'medium', m14:'medium2', semovente:'spg', p40:'heavy',
+    tks:'light', '7tp':'light2', '4tp':'light2',
+    lt35:'light2', lt38:'medium', st1:'medium2',
+    toldi:'light2', turan:'medium', zrinyi:'spg', tas:'heavy',
+    r1:'light', r2:'light2', r35_ro:'light', t3:'medium', t4:'heavy',
+    t15:'light2', m3:'light2', t32:'medium',
+    vickers6:'light', t26_fi:'light2', bt42:'medium', stug3_fi:'spg',
+    pz38_bg:'light2', pz4_bg:'medium', stug3_bg:'spg',
+    vickers6_gr:'light', ft_gr:'light',
+    vickers6_tr:'light', m3_tr:'light2',
+    t13:'td', t15_be:'light2',
+    vickers6_nl:'light', m36:'light',
+    strv_m39:'light2', strv_m42:'medium',
+    panzer1:'light', t26_es:'light2',
+    lth:'light2'
+  };
+  for(var key in role){
+    var r=roles[role[key]];
+    EU_UNITS[key]={key:key,name:key,code:r.code,cost:r.cost,hp:r.hp,atk:r.atk,
+                   def:r.def,up:r.up,col:r.col,blurb:'Armoured fighting vehicle.'};
+    TANK_KEYS[key]=1;
+  }
+  /* the old generic tank/heavy chassis also belong in the Tanks tab */
+  TANK_KEYS.tank=1; TANK_KEYS.heavy=1;
+  for(var nat in EU_ARSENAL){
+    if(EU_TANKS[nat]) EU_ARSENAL[nat].tanks=EU_TANKS[nat];
+  }
+  for(var nat2 in EU_TANKS){
+    if(!EU_ARSENAL[nat2]) EU_ARSENAL[nat2]={army:[],air:[],tanks:EU_TANKS[nat2]};
+  }
+})();
+
 /* historical names per nation+chassis, harvested from ARSENAL.
    Rebuilt per map by buildNatName(). */
 function buildNatName(){
   NAT_NAME={};
   for(var nat in (ARSENAL||{})){
     NAT_NAME[nat]={};
-    ['army','air'].forEach(function(k){
+    ['army','air','tanks'].forEach(function(k){
       (ARSENAL[nat][k]||[]).forEach(function(s){
         var i=s.indexOf(':'), j=s.indexOf('|');
         NAT_NAME[nat][s.slice(0,i)]=s.slice(i+1,j);
@@ -1518,10 +1682,16 @@ function mineGold(c){ var p=NATION_STATS[c]; return (p&&p.mine!=null)?p.mine:MIN
 function arsenal(nat,kind){
   var a=ARSENAL&&ARSENAL[nat];
   if(!a || !a[kind] || !a[kind].length) return null;
-  return a[kind].map(function(s){
+  var list=a[kind];
+  /* armour lives in the Tanks tab, never in the Army list */
+  if(kind==='army') list=list.filter(function(s){
+    return !TANK_KEYS[s.slice(0,s.indexOf(':'))];
+  });
+  if(!list.length) return null;
+  return list.map(function(s){
     var i=s.indexOf(':'), j=s.indexOf('|');
     var key=s.slice(0,i), name=s.slice(i+1,j), blurb=s.slice(j+1);
-    var t=U(nat,key)||UNITS[kind==='army'?'infantry':'fighter'];
+    var t=U(nat,key)||UNITS[kind==='air'?'fighter':(kind==='tanks'?'tank':'infantry')];
     return {type:key,name:name,blurb:blurb,col:t.col,code:t.code,cost:t.cost,hp:t.hp,
             atk:t.atk,def:t.def,up:t.up,mines:!!t.mines,air:!!t.air};
   });
@@ -1887,7 +2057,7 @@ var MAPS={
     proj:function(){ return EU_PROJ; },
     blocs:['Axis','Allies','Other','Neutral'],
     defaultPlayer:'germany', tabAir:'&#9992; Air Force', newsName:'THE CONTINENTAL',
-    rules:'Nations that fought in the Second World War are on the map. Each begins with its own treasury, riflemen and two mine fields at home &mdash; a major power far more than a micro-state.<br>There is <b>no daily income</b> &mdash; <b>mine fields are the only gold</b> in the game, mined at each nation\u2019s own rate. Buy mine cars to lay more, and take countries to grow your yield.<br>Click a country to open its sheet: a small map of the country with the units standing in it. Recruit in your own territory, then order units into a neighbouring country. Every front is a real front &mdash; the AI nations fight each other too, so a war can be won without fighting the whole continent.<br>Units fight at their best on friendly soil, and hardest of all in their homeland. Tanks, artillery and bombers cost upkeep every day, so a huge army can bankrupt you.<br>Army sizes follow real history: micro-states like <b>Albania</b> or <b>Denmark</b> hold just <b>2&ndash;3</b> units, while a major power fields up to <b>14</b>. The Soviet Union is split into three fronts &mdash; <b>South 4</b>, <b>Centre 4</b>, <b>North 5</b> &mdash; and a weak state buys only basic rifles, guns and fighters: no tanks, heavy armour or bomber fleets.<br>Send your men at a front and they <b>hold the ground until the country falls</b> &mdash; only then do the survivors march back home to rearm. Only <b>one territory on the whole map</b> changes hands each day.<br>You win by holding <b>every</b> territory. You lose if you hold none.'
+    rules:'Nations that fought in the Second World War are on the map. Each begins with its own treasury, riflemen and two mine fields at home &mdash; a major power far more than a micro-state.<br>There is <b>no daily income</b> &mdash; <b>mine fields are the only gold</b> in the game, mined at each nation\u2019s own rate. Buy mine cars to lay more, and take countries to grow your yield.<br>Once you have chosen a nation, the Shop&rsquo;s <b>Tanks</b> tab lists that nation&rsquo;s own historical armour.<br>Click a country to open its sheet: a small map of the country with the units standing in it. Recruit in your own territory, then order units into a neighbouring country. Every front is a real front &mdash; the AI nations fight each other too, so a war can be won without fighting the whole continent.<br>Units fight at their best on friendly soil, and hardest of all in their homeland. Tanks, artillery and bombers cost upkeep every day, so a huge army can bankrupt you.<br>Army sizes follow real history: micro-states like <b>Albania</b> or <b>Denmark</b> hold just <b>2&ndash;3</b> units, while a major power fields up to <b>14</b>. The Soviet Union is split into three fronts &mdash; <b>South 4</b>, <b>Centre 4</b>, <b>North 5</b> &mdash; and a weak state buys only basic rifles, guns and fighters: no tanks, heavy armour or bomber fleets.<br>Send your men at a front and they <b>hold the ground until the country falls</b> &mdash; only then do the survivors march back home to rearm. Only <b>one territory on the whole map</b> changes hands each day.<br>You win by holding <b>every</b> territory. You lose if you hold none.'
   },
   china:{
     id:'china', title:'CHINA &middot; THE PROVINCES', tag:'Choosing your province',
@@ -2150,6 +2320,7 @@ function tick(){
   checkEnd();
   achTick();
   render();
+  autoSave();
 }
 
 function checkEnd(){
@@ -2250,6 +2421,7 @@ function renderAchList(){
 }
 function exportBackup(){
   try{
+    if(S && !S.over){ try{ saveGame(true); }catch(e){} }   /* export the latest turn */
     var b={ app:'europe-ww2-map-game', v:1, exported:Date.now(),
             ach:ACH_SAVE||{},
             save:localStorage.getItem('e1939_save')||null,
@@ -2307,11 +2479,14 @@ function aiTurn(){
     /* --- recruit: with whatever this nation's own arsenal offers --- */
     if(gold>=10){
       var choice=null;
-      var ar=shopList('army',n.id), air=shopList('air',n.id);
+      var ar=shopList('army',n.id), air=shopList('air',n.id), tk=shopList('tanks',n.id);
       var cars=unitsOf(n.id).filter(function(u){ return U(u.owner,u.type).mines; }).length;
       var mineU=ar.filter(function(u){return u.mines;})[0]||ar[0];
       var artU =ar.filter(function(u){return u.def>=1.9;})[0]||ar[0];
-      var tankU=ar.filter(function(u){return u.atk>=20&&u.def<1.9;})[0]||ar[ar.length-2]||ar[0];
+      var affordable=tk.filter(function(u){return u.cost<=gold;});
+      var tankU=affordable.length
+        ? affordable[Math.min(affordable.length-1, Math.random()*affordable.length|0)]
+        : (tk[0]||ar[ar.length-2]||ar[0]);
       var bombU=air.filter(function(u){return u.atk>=28;})[0]||air[0];
       if(gold>=mineU.cost && cars<2 && Math.random()<0.7) choice=mineU.type;   /* mines are the economy */
       else if(gold>=bombU.cost && terr>=3 && Math.random()<0.18) choice=bombU.type;
@@ -2471,7 +2646,7 @@ function shopList(kind,nat){
   if(src) return src;
   var keys=(FALLBACK&&FALLBACK[kind])||[];
   return keys.map(function(key){
-    var t=U(nat,key)||UNITS[kind==='army'?'infantry':'fighter'];
+    var t=U(nat,key)||UNITS[kind==='air'?'fighter':(kind==='tanks'?'tank':'infantry')];
     return {type:key,name:t.name,blurb:t.blurb,col:t.col,code:t.code,cost:t.cost,
             hp:t.hp,atk:t.atk,def:t.def,up:t.up,mines:!!t.mines,air:!!t.air};
   });
@@ -2487,13 +2662,19 @@ function paintShop(el, provId){
   if(!el) return;
   var na=document.getElementById('shopWho');
   if(na) na.innerHTML=NBY[S.player].flag+' '+NBY[S.player].name+' arsenal';
-  var tA=document.getElementById('tabArmy'), tB=document.getElementById('tabAir');
-  if(tA&&tB){
+  var tA=document.getElementById('tabArmy'), tB=document.getElementById('tabAir'),
+      tT=document.getElementById('tabTanks');
+  var hasTanks=shopList('tanks',S.player).length>0;
+  if(!hasTanks && SHOP_TAB==='tanks') SHOP_TAB='army';
+  if(tT) tT.style.display=hasTanks?'':'none';
+  if(tA&&tB&&tT){
     tA.className='tab'+(SHOP_TAB==='army'?' on':'');
     tB.className='tab'+(SHOP_TAB==='air'?' on':'');
+    tT.className='tab'+(SHOP_TAB==='tanks'?' on':'');
     if(!tA.onclick){
-      tA.onclick=function(){ SHOP_TAB='army'; paintShop(document.getElementById('shop'),S.sel); };
-      tB.onclick=function(){ SHOP_TAB='air';  paintShop(document.getElementById('shop'),S.sel); };
+      tA.onclick=function(){ SHOP_TAB='army';  paintShop(document.getElementById('shop'),S.sel); };
+      tB.onclick=function(){ SHOP_TAB='air';   paintShop(document.getElementById('shop'),S.sel); };
+      tT.onclick=function(){ SHOP_TAB='tanks'; paintShop(document.getElementById('shop'),S.sel); };
     }
   }
   var need=(SHOP_TAB+'|'+S.player);
@@ -3001,13 +3182,15 @@ function wireTop(){
   };
   document.addEventListener('keydown',function(e){
     if(e.target.tagName==='BUTTON' && (e.code==='Space'||e.code==='Enter')) return;
+    if(e.target && (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||
+                    e.target.tagName==='SELECT'||e.target.isContentEditable)) return;
     if(e.code==='Space'){
   e.preventDefault();
   if(spd===0 && UI_PAUSED){ flash(uiPauseHint()); return; }
   setSpeed(spd===0?1:0); return;
 }
-    if(e.key==='s'||e.key==='S'){ e.preventDefault(); showPage('shop'); return; }
-    if(e.key==='b'||e.key==='B'){ e.preventDefault(); showPage('battle'); return; }
+    if(e.key==='e'||e.key==='E'){ e.preventDefault(); if(document.getElementById('start').style.display!=='none') return; showPage('shop'); return; }
+    if(e.key==='b'||e.key==='B'){ e.preventDefault(); if(document.getElementById('start').style.display!=='none') return; showPage('battle'); return; }
     if(e.key==='n'||e.key==='N'){ e.preventDefault(); document.getElementById('bNews').click(); return; }
     if(e.key==='m'||e.key==='M'){ e.preventDefault(); if(document.getElementById('bMail')) document.getElementById('bMail').click(); return; }
     if(e.key==='Escape'){ closePage(); return; }
@@ -3144,6 +3327,8 @@ applyMapUI();
 achBadge();
 showPage(null);
 setSpeed(0);
+/* ask the browser not to evict our progress when storage runs low */
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 
 /* bookmarkable auto start:  ...#play=germany or ...#play=beijing */
 (function(){
@@ -3584,7 +3769,8 @@ function applyNetState(o){
 }
 
 /* ---------- save / load campaign (localStorage) ---------- */
-function saveGame(){
+var SAVE_T=0;
+function saveGame(silent){
   var wars=[]; S.wars.forEach(function(w){ wars.push(w); });
   var prov={};
   for(var k in S.prov){ var p=S.prov[k]; prov[k]={o:p.owner,m:p.mines,mb:p.mineBy,mt:p.mineT,pend:p.pend}; }
@@ -3600,10 +3786,24 @@ function saveGame(){
             broke:Array.prototype.slice.call(S.brokeSet||[]),
             mail:S.mail.slice(-60), pact:Array.prototype.slice.call(S.pact||[]),
             mailSeq:S.mailSeq, nextDispatchDay:S.nextDispatchDay, nextMailDay:S.nextMailDay, over:S.over};
-  try{ localStorage.setItem('e1939_save', JSON.stringify(data)); flash('War saved.'); }
-  catch(e){ flash('Could not save (storage unavailable).'); }
+  try{ localStorage.setItem('e1939_save', JSON.stringify(data)); SAVE_T=Date.now();
+       if(!silent) flash('War saved.'); return true; }
+  catch(e){ if(!silent) flash('Could not save (storage unavailable).'); return false; }
+}
+/* keep the campaign on disk without the player having to press Save */
+function autoSave(){
+  if(!S || S.over) return;
+  if(Date.now()-SAVE_T<4000) return;
+  saveGame(true);
 }
 function hasSave(){ try{ return !!localStorage.getItem('e1939_save'); }catch(e){ return false; } }
+/* closing the tab or shutting the computer down should not lose the war */
+try{
+  window.addEventListener('pagehide',function(){ if(S && !S.over) saveGame(true); });
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='hidden' && S && !S.over) saveGame(true);
+  });
+}catch(e){}
 function loadGame(){
   var o; try{ o=JSON.parse(localStorage.getItem('e1939_save')||'null'); }catch(e){ o=null; }
   if(!o || o.v!==1){ flash('No saved war found.'); return; }
@@ -4361,7 +4561,10 @@ document.getElementById('bHelp').onclick=openTutorial;
              var s=document.getElementById('bAchStart'); if(s) s.onclick=openAchModal;
              var ex=document.getElementById('bExport'); if(ex) ex.onclick=exportBackup;
              var im=document.getElementById('bImport'); if(im) im.onclick=function(){ var f=document.getElementById('bImportFile'); if(f) f.click(); };
-             var fi=document.getElementById('bImportFile'); if(fi) fi.onchange=function(){ importBackup(fi.files&&fi.files[0]); fi.value=''; }; })();
+             var fi=document.getElementById('bImportFile'); if(fi) fi.onchange=function(){ importBackup(fi.files&&fi.files[0]); fi.value=''; };
+             var exs=document.getElementById('bExportStart'); if(exs) exs.onclick=exportBackup;
+             var ims=document.getElementById('bImportStart'); if(ims) ims.onclick=function(){ var f=document.getElementById('bImportFileStart'); if(f) f.click(); };
+             var fis=document.getElementById('bImportFileStart'); if(fis) fis.onchange=function(){ importBackup(fis.files&&fis.files[0]); fis.value=''; }; })();
 document.getElementById('bSound').onclick=function(){
   sndInit(); sndToggle();
   document.getElementById('bSound').innerHTML=SND.on?'&#128266; Sound':'&#128263; Sound';
